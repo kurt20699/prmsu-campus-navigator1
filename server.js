@@ -1370,7 +1370,165 @@ function mapWeatherCode(code) {
 let weatherCache = { data: null, fetchedAt: 0 };
 const WEATHER_CACHE_MS = 5 * 60 * 1000; // 5 minutes
 
+// ══════════════════════════════════════════
+// 🌤️ CAMPUS WEATHER — tries 3 providers in order, so one failing
+// provider (rate limit, missing key, outage) doesn't break the card:
+//   1. OpenWeatherMap  (only if OPENWEATHER_API_KEY is set on the server)
+//   2. Open-Meteo      (free, no key — but rate-limited per shared IP on Render)
+//   3. MET Norway      (free, no key — needs an identifying User-Agent)
+// Results are cached for 10 minutes; if every provider fails, the last
+// good reading is served instead of an error.
+// ══════════════════════════════════════════
+const CAMPUS_WEATHER_POINT = { lat: 15.318547, lng: 119.98376 }; // PRMSU Iba Campus
+const CAMPUS_WEATHER_CACHE_MS = 10 * 60 * 1000;
+const CAMPUS_WEATHER_TIMEOUT_MS = 6000;
+let campusWeatherCache = { data: null, fetchedAt: 0 };
+
+async function fetchJsonWithTimeout(url, options = {}) {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), CAMPUS_WEATHER_TIMEOUT_MS);
+  try {
+    const response = await fetch(url, { ...options, signal: controller.signal });
+    const data = await response.json().catch(() => null);
+    if (!response.ok) {
+      throw new Error(data?.message || data?.reason || `HTTP ${response.status}`);
+    }
+    return data;
+  } finally {
+    clearTimeout(timeoutId);
+  }
+}
+
+function isNightInManila() {
+  const hour = Number(new Intl.DateTimeFormat("en-US", {
+    timeZone: "Asia/Manila", hour: "numeric", hourCycle: "h23"
+  }).format(new Date()));
+  return hour < 6 || hour >= 18;
+}
+
+// Open-Meteo / WMO weather codes → icon + label
+function campusWeatherFromWmo(code) {
+  const night = isNightInManila();
+  if (code === 0) return night ? { icon: "🌙", condition: "Clear night" } : { icon: "☀️", condition: "Clear sky" };
+  if (code === 1 || code === 2) return night ? { icon: "☁️", condition: "Partly cloudy" } : { icon: "⛅", condition: "Partly cloudy" };
+  if (code === 3) return { icon: "☁️", condition: "Overcast" };
+  if (code === 45 || code === 48) return { icon: "🌫️", condition: "Foggy" };
+  if (code >= 51 && code <= 57) return { icon: "🌦️", condition: "Drizzle" };
+  if (code >= 61 && code <= 67) return { icon: "🌧️", condition: code >= 65 ? "Heavy rain" : "Rain" };
+  if (code >= 80 && code <= 82) return { icon: "🌧️", condition: code === 82 ? "Heavy rain showers" : "Rain showers" };
+  if (code >= 95) return { icon: "⛈️", condition: "Thunderstorm" };
+  return { icon: "⛅", condition: "Cloudy" };
+}
+
+// OpenWeatherMap condition ids → icon + label
+function campusWeatherFromOwm(id, description) {
+  const night = isNightInManila();
+  const label = description ? description.charAt(0).toUpperCase() + description.slice(1) : "Weather";
+  if (id >= 200 && id < 300) return { icon: "⛈️", condition: label };
+  if (id >= 300 && id < 400) return { icon: "🌦️", condition: label };
+  if (id >= 500 && id < 600) return { icon: "🌧️", condition: label };
+  if (id >= 700 && id < 800) return { icon: "🌫️", condition: label };
+  if (id === 800) return { icon: night ? "🌙" : "☀️", condition: label };
+  if (id === 801 || id === 802) return { icon: night ? "☁️" : "⛅", condition: label };
+  return { icon: "☁️", condition: label };
+}
+
+// MET Norway symbol codes (e.g. "partlycloudy_night", "heavyrain") → icon + label
+function campusWeatherFromMetNo(symbol) {
+  const s = String(symbol || "");
+  const night = s.includes("_night") || isNightInManila();
+  if (s.includes("thunder")) return { icon: "⛈️", condition: "Thunderstorm" };
+  if (s.includes("heavyrain")) return { icon: "🌧️", condition: "Heavy rain" };
+  if (s.includes("rainshowers")) return { icon: "🌦️", condition: "Rain showers" };
+  if (s.includes("rain")) return { icon: "🌧️", condition: "Rain" };
+  if (s.includes("fog")) return { icon: "🌫️", condition: "Foggy" };
+  if (s.startsWith("clearsky")) return night ? { icon: "🌙", condition: "Clear night" } : { icon: "☀️", condition: "Clear sky" };
+  if (s.startsWith("fair") || s.startsWith("partlycloudy")) return { icon: night ? "☁️" : "⛅", condition: "Partly cloudy" };
+  if (s.startsWith("cloudy")) return { icon: "☁️", condition: "Cloudy" };
+  return { icon: "⛅", condition: "Cloudy" };
+}
+
+const CAMPUS_WEATHER_PROVIDERS = [
+  {
+    name: "OpenWeatherMap",
+    enabled: () => !!process.env.OPENWEATHER_API_KEY,
+    async fetch() {
+      const { lat, lng } = CAMPUS_WEATHER_POINT;
+      const data = await fetchJsonWithTimeout(
+        `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lng}&units=metric&appid=${process.env.OPENWEATHER_API_KEY}`
+      );
+      if (typeof data?.main?.temp !== "number") throw new Error("No temperature in response.");
+      const w = data.weather?.[0] || {};
+      return { temperatureC: data.main.temp, ...campusWeatherFromOwm(w.id, w.description) };
+    }
+  },
+  {
+    name: "Open-Meteo",
+    enabled: () => true,
+    async fetch() {
+      const { lat, lng } = CAMPUS_WEATHER_POINT;
+      const data = await fetchJsonWithTimeout(
+        `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lng}&current=temperature_2m,weather_code&timezone=Asia%2FManila`
+      );
+      if (typeof data?.current?.temperature_2m !== "number") throw new Error(data?.reason || "No current data.");
+      return { temperatureC: data.current.temperature_2m, ...campusWeatherFromWmo(data.current.weather_code) };
+    }
+  },
+  {
+    name: "MET Norway",
+    enabled: () => true,
+    async fetch() {
+      const { lat, lng } = CAMPUS_WEATHER_POINT;
+      const contact = process.env.WEATHER_CONTACT_EMAIL || "https://prmsu-campus-navigator1.onrender.com";
+      const data = await fetchJsonWithTimeout(
+        `https://api.met.no/weatherapi/locationforecast/2.0/compact?lat=${lat.toFixed(4)}&lon=${lng.toFixed(4)}`,
+        { headers: { "User-Agent": `PRMSU-Campus-Navigator/1.0 (${contact})` } }
+      );
+      const now = data?.properties?.timeseries?.[0]?.data;
+      const temp = now?.instant?.details?.air_temperature;
+      if (typeof temp !== "number") throw new Error("No temperature in response.");
+      const symbol = now?.next_1_hours?.summary?.symbol_code || now?.next_6_hours?.summary?.symbol_code;
+      return { temperatureC: temp, ...campusWeatherFromMetNo(symbol) };
+    }
+  }
+];
+
 app.get("/api/weather", async (_req, res) => {
+  const now = Date.now();
+  if (campusWeatherCache.data && (now - campusWeatherCache.fetchedAt) < CAMPUS_WEATHER_CACHE_MS) {
+    return res.json(campusWeatherCache.data);
+  }
+
+  const failures = [];
+  for (const provider of CAMPUS_WEATHER_PROVIDERS) {
+    if (!provider.enabled()) continue;
+    try {
+      const reading = await provider.fetch();
+      const payload = {
+        ok: true,
+        temperatureC: reading.temperatureC,
+        condition: reading.condition,
+        icon: reading.icon,
+        location: "Iba Campus",
+        source: provider.name,
+        updatedAt: new Date().toISOString()
+      };
+      campusWeatherCache = { data: payload, fetchedAt: now };
+      return res.json(payload);
+    } catch (err) {
+      failures.push(`${provider.name}: ${err.message}`);
+    }
+  }
+
+  console.warn("Weather fetch failed on all providers —", failures.join(" | "));
+  // Serve the last good reading (even if older than 10 minutes) instead of an error.
+  if (campusWeatherCache.data) return res.json(campusWeatherCache.data);
+  return res.status(503).json({ ok: false, error: "Weather data is temporarily unavailable." });
+});
+
+// Old single-provider weather route — replaced by the one above, kept only
+// so nothing else in this file breaks. Nothing in the app calls it anymore.
+app.get("/api/weather-old", async (_req, res) => {
   const now = Date.now();
   if (weatherCache.data && (now - weatherCache.fetchedAt) < WEATHER_CACHE_MS) {
     return res.json(weatherCache.data);
