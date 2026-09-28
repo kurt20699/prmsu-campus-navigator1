@@ -1,0 +1,4310 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+:root {
+    --primary-blue: #1e5b7a;
+    --dark-blue: #0f3a52;
+    --light-blue: #3b7ea2;
+    --accent-purple: #6c63ff;
+    --success-green: #34a853;
+    --warning-yellow: #ffc107;
+    --danger-red: #ea4335;
+    --white: #ffffff;
+    --light-gray: #f5f7fa;
+    --border-gray: #e4e7ec;
+    --surface-muted: #fbfcfe;
+    --app-bg-1: #f7f2e9;
+    --app-bg-2: #e1ecf6;
+    --text-dark: #202124;
+    --text-gray: #5f6368;
+    --shadow-sm: 0 1px 3px rgba(0,0,0,0.1);
+    --shadow-md: 0 2px 8px rgba(0,0,0,0.15);
+    --shadow-lg: 0 4px 16px rgba(0,0,0,0.2);
+    --shadow-xl: 0 24px 80px rgba(11, 38, 58, 0.18);
+    --app-vh: 1vh;
+}
+
+body {
+    font-family: "Sora", "Segoe UI", Tahoma, sans-serif;
+    background:
+        radial-gradient(1200px 800px at 10% -10%, #d8ecff 0%, transparent 60%),
+        radial-gradient(900px 700px at 110% 10%, #ffe7c2 0%, transparent 55%),
+        linear-gradient(180deg, var(--app-bg-1) 0%, var(--app-bg-2) 100%);
+    color: var(--text-dark);
+    overflow-x: hidden;
+    min-height: 100vh;
+}
+
+/* App Container with Gradient Background */
+.app-container {
+    background: transparent;
+    min-height: 100dvh;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+}
+
+.main-wrapper {
+    max-width: 1600px;
+    margin: 0 auto;
+    background: white;
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: var(--shadow-xl);
+    flex: 1;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    animation: shellEnter 0.6s ease;
+}
+
+@keyframes shellEnter {
+    0% {
+        transform: translateY(12px);
+        opacity: 0;
+    }
+    100% {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+/* Loading Screen */
+.loading-screen {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, var(--primary-blue) 0%, var(--dark-blue) 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.5s;
+}
+
+.loading-screen.active {
+    opacity: 1;
+    pointer-events: all;
+}
+
+.loading-content {
+    text-align: center;
+    color: white;
+}
+
+.logo-container {
+    margin-bottom: 30px;
+}
+
+.logo-circle {
+    width: 120px;
+    height: 120px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto;
+    animation: pulse 2s ease-in-out infinite;
+    backdrop-filter: blur(10px);
+    border: 3px solid rgba(255, 255, 255, 0.3);
+}
+
+.logo-icon {
+    font-size: 60px;
+}
+
+.logo-img {
+    width: 80px;
+    height: 80px;
+    object-fit: contain;
+    display: block;
+}
+
+@keyframes pulse {
+    0%, 100% {
+        transform: scale(1);
+        box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.4);
+    }
+    50% {
+        transform: scale(1.05);
+        box-shadow: 0 0 0 20px rgba(255, 255, 255, 0);
+    }
+}
+
+.loading-title {
+    font-size: 32px;
+    margin-bottom: 30px;
+    font-weight: 700;
+    text-shadow: 0 2px 10px rgba(0,0,0,0.2);
+}
+
+.loading-bar {
+    width: 300px;
+    height: 6px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 3px;
+    margin: 0 auto 20px;
+    overflow: hidden;
+}
+
+.loading-progress {
+    height: 100%;
+    background: white;
+    border-radius: 3px;
+    width: 0%;
+    animation: loading 2s ease-in-out forwards;
+}
+
+@keyframes loading {
+    0% { width: 0%; }
+    100% { width: 100%; }
+}
+
+.loading-text {
+    font-size: 16px;
+    opacity: 0.9;
+    animation: fadeInOut 1.5s ease-in-out infinite;
+}
+
+@keyframes fadeInOut {
+    0%, 100% { opacity: 0.5; }
+    50% { opacity: 1; }
+}
+
+/* Modal Styles */
+.modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s;
+}
+
+.modal.active {
+    opacity: 1;
+    pointer-events: all;
+}
+
+.modal-content {
+    background: white;
+    padding: 40px;
+    border-radius: 16px;
+    box-shadow: var(--shadow-lg);
+    max-width: 600px;
+    width: 90%;
+    max-height: 90vh;
+    overflow-y: auto;
+    animation: slideUp 0.4s ease;
+}
+
+.modal-content.location-modal {
+    max-width: 500px;
+}
+
+@keyframes slideUp {
+    from {
+        transform: translateY(30px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+.modal-content h1 {
+    color: var(--primary-blue);
+    margin-bottom: 10px;
+    text-align: center;
+    font-size: 28px;
+}
+
+.modal-content > p {
+    text-align: center;
+    color: var(--text-gray);
+    margin-bottom: 30px;
+}
+
+/* Virtual tour modal (responsive) */
+.virtual-tour-modal {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.97);
+    z-index: 99999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: clamp(12px, 2vw, 24px);
+}
+
+.virtual-tour-shell {
+    width: min(100%, 960px);
+    padding: clamp(12px, 2vw, 20px);
+}
+
+.virtual-tour-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-bottom: 16px;
+    position: relative;
+    z-index: 30;
+}
+
+.virtual-tour-title {
+    color: #ffffff;
+    font-size: clamp(16px, 2.2vw, 20px);
+}
+
+.virtual-tour-exit-btn {
+    background: linear-gradient(135deg, #ff9966 0%, #ff5f6d 100%);
+    color: #ffffff;
+    border: 1px solid rgba(255, 255, 255, 0.35);
+    border-radius: 999px;
+    padding: 8px 16px;
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.4px;
+    text-transform: uppercase;
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.25);
+}
+
+.virtual-tour-exit-btn:hover {
+    filter: brightness(0.98);
+    transform: translateY(-1px);
+}
+
+.virtual-tour-exit-btn:focus-visible {
+    outline: 3px solid rgba(255, 153, 102, 0.45);
+    outline-offset: 2px;
+}
+
+.virtual-tour-panorama {
+    height: min(65vh, 70dvh);
+}
+
+.virtual-tour-exit-fab {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    background: linear-gradient(135deg, rgba(255, 153, 102, 0.95), rgba(255, 95, 109, 0.95));
+    color: #ffffff;
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    border-radius: 999px;
+    padding: 6px 12px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    display: none;
+    z-index: 30;
+    box-shadow: 0 10px 18px rgba(0, 0, 0, 0.35);
+    pointer-events: auto;
+}
+
+@media (max-width: 720px) {
+    .virtual-tour-panorama {
+        height: min(55vh, 60dvh);
+    }
+
+    .virtual-tour-exit-btn {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .virtual-tour-exit-fab {
+        display: inline-flex;
+    }
+}
+
+/* Header - Styled like reference image */
+.main-header {
+    background: linear-gradient(135deg, var(--primary-blue) 0%, var(--dark-blue) 100%);
+    color: white;
+    padding: 20px 30px;
+    box-shadow: var(--shadow-md);
+    position: relative;
+    overflow: hidden;
+    /* ✅ Restricts the header to pan gestures only, which excludes
+       pinch-zoom (and — since double-tap-zoom is only offered by the
+       browser when pinch-zoom is also permitted — this blocks double-tap
+       zoom too). Buttons/menus inside the header are unaffected: this only
+       governs pan/zoom gestures, not tap/click event dispatch. */
+    touch-action: pan-x pan-y;
+}
+
+.main-header::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(500px 200px at 10% 0%, rgba(255, 255, 255, 0.2), transparent 60%);
+    pointer-events: none;
+}
+
+.header-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    max-width: 1600px;
+    margin: 0 auto;
+}
+
+.header-left {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.header-icon {
+    width: 46px;
+    height: 46px;
+    border-radius: 14px;
+    background: rgba(255, 255, 255, 0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: "DM Serif Display", "Sora", sans-serif;
+    font-size: 18px;
+    letter-spacing: 0.5px;
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+}
+
+.header-icon::before {
+    content: "";
+}
+
+.header-text {
+    display: flex;
+    flex-direction: column;
+}
+
+.header-title {
+    font-size: 24px;
+    font-weight: 700;
+    margin: 0;
+    letter-spacing: 0.5px;
+    font-family: "DM Serif Display", "Sora", sans-serif;
+}
+
+.header-subtitle {
+    font-size: 14px;
+    font-weight: 400;
+    opacity: 0.95;
+    margin-top: 2px;
+}
+
+.header-right {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 10px;
+}
+
+.header-right-content {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    position: relative;
+    z-index: 2;
+}
+
+#logoutBtn {
+    pointer-events: auto;
+    background: linear-gradient(135deg, #ffb347 0%, #ff7a59 100%);
+    color: #ffffff;
+    border: 1px solid rgba(255, 255, 255, 0.35);
+    box-shadow: 0 10px 18px rgba(15, 23, 42, 0.25);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 10px 16px;
+    font-weight: 700;
+    letter-spacing: 0.2px;
+    white-space: nowrap;
+    text-transform: uppercase;
+    font-size: 12px;
+    border-radius: 999px;
+    position: relative;
+}
+
+#logoutBtn::after {
+    content: "";
+    position: absolute;
+    inset: -4px;
+    border-radius: 999px;
+    border: 1px solid rgba(255, 255, 255, 0.45);
+    opacity: 0.6;
+    pointer-events: none;
+}
+
+#logoutBtn:hover {
+    filter: brightness(0.98);
+    transform: translateY(-1px);
+    box-shadow: 0 12px 22px rgba(15, 23, 42, 0.3);
+}
+
+#logoutBtn:focus-visible {
+    outline: 3px solid rgba(255, 183, 77, 0.5);
+    outline-offset: 2px;
+}
+
+.logout-modal {
+    max-width: 400px;
+    text-align: left;
+    padding: 24px;
+    border-radius: 28px;
+}
+
+.logout-title {
+    font-size: 20px;
+    font-weight: 500;
+    color: var(--text-dark);
+    margin-bottom: 24px;
+}
+
+.logout-actions {
+    display: flex;
+    gap: 4px;
+    justify-content: flex-end;
+    flex-wrap: wrap;
+}
+
+.btn-text {
+    background: none;
+    border: none;
+    padding: 10px 14px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    color: var(--text-dark);
+    cursor: pointer;
+    transition: background 0.15s;
+}
+
+.btn-text:hover {
+    background: rgba(0, 0, 0, 0.06);
+}
+
+.btn-text-accent {
+    color: var(--primary-blue);
+}
+
+.btn-secondary {
+    border: 1px solid var(--border-gray);
+    background: #ffffff;
+    color: var(--text-dark);
+    border-radius: 10px;
+    padding: 10px 16px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.btn-secondary:hover {
+    border-color: var(--primary-blue);
+    background: #f0f7ff;
+}
+
+
+.header-time {
+    font-size: 16px;
+    font-weight: 600;
+}
+
+.active-users-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 12px;
+    font-weight: 700;
+    color: #16a34a;
+    background: #e8f9ee;
+    padding: 4px 10px;
+    border-radius: 999px;
+    white-space: nowrap;
+    line-height: 1;
+}
+
+@media (max-width: 768px) {
+    .active-users-badge {
+        font-size: 11px;
+        padding: 3px 8px;
+    }
+}
+
+/* Main Container */
+.main-container {
+    display: grid;
+    grid-template-columns: minmax(300px, 360px) 1fr;
+    flex: 1;
+    min-height: 0;
+    height: auto;
+    gap: 0;
+}
+
+/* Sidebar - Styled like reference image */
+.sidebar {
+    background: var(--surface-muted);
+    overflow-y: auto;
+    padding: 22px 20px 24px;
+    border-right: 1px solid var(--border-gray);
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+}
+
+/* ── Campus Alerts / Campus Tips tabs ── */
+.alerts-tips-tabs {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 10px;
+    background: #eef3f8;
+    padding: 4px;
+    border-radius: 10px;
+    flex-shrink: 0;
+}
+.alerts-tips-tab {
+    flex: 1;
+    border: none;
+    background: transparent;
+    padding: 8px 10px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #4f5f73;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+}
+.alerts-tips-tab.active {
+    background: #2c5aa0;
+    color: #fff;
+}
+.alerts-tips-separator {
+    flex: 0 0 auto;
+    display: flex;
+    align-items: center;
+    color: #000000;
+    font-weight: 600;
+    font-size: 13px;
+    padding: 0 2px;
+}
+
+/* ── Campus Weather card ── */
+.campus-weather-card {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: linear-gradient(135deg, #e8f0fe 0%, #f5f9ff 100%);
+    border-left: 5px solid #2c5aa0;
+    border-radius: 8px;
+    padding: 12px 14px;
+    margin-bottom: 14px;
+    box-sizing: border-box;
+    flex-shrink: 0;
+}
+.campus-weather-card .weather-icon {
+    font-size: 30px;
+    line-height: 1;
+    flex-shrink: 0;
+}
+.campus-weather-card .weather-info {
+    min-width: 0; /* allows text to wrap/truncate instead of overflowing the card */
+}
+.campus-weather-card .weather-temp {
+    font-size: 18px;
+    font-weight: 700;
+    color: #14304f;
+    line-height: 1.2;
+}
+.campus-weather-card .weather-location {
+    font-size: 12px;
+    font-weight: 600;
+    color: #2c5aa0;
+    margin-top: 1px;
+}
+.campus-weather-card .weather-condition {
+    font-size: 12px;
+    color: #4f5f73;
+    margin-top: 1px;
+    word-wrap: break-word;
+}
+.campus-weather-card.weather-error {
+    border-left-color: #dc2626;
+}
+.campus-weather-card.weather-error .weather-condition {
+    color: #991b1b;
+}
+
+@media (max-width: 480px) {
+    .campus-weather-card {
+        padding: 10px 12px;
+        gap: 10px;
+    }
+    .campus-weather-card .weather-icon {
+        font-size: 26px;
+    }
+    .campus-weather-card .weather-temp {
+        font-size: 16px;
+    }
+    .campus-weather-card .weather-condition {
+        font-size: 11px;
+    }
+}
+
+/* ── Campus Tips card (mirrors .alert-banner sizing/spacing) ── */
+.campus-tips-card {
+    background: #fff8e1;
+    border-left: 5px solid #f0a500;
+    border-radius: 8px;
+    padding: 12px 14px;
+    margin-bottom: 20px;
+    box-sizing: border-box;
+    height: 140px;           /* ✅ same fixed height as .alert-banner */
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    flex-shrink: 0;
+}
+.campus-tips-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 12px;
+    font-weight: 700;
+    color: #92400e;
+    margin-bottom: 6px;
+}
+.campus-tips-counter {
+    font-size: 11px;
+    opacity: 0.75;
+}
+.campus-tips-text {
+    margin: 0 0 10px;
+    font-size: 13px;
+    line-height: 1.5;
+    color: #4f3403;
+    word-wrap: break-word;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+@media (max-width: 768px) {
+    .campus-tips-card {
+        height: auto;
+    }
+    .campus-tips-text {
+        -webkit-line-clamp: unset;
+        line-clamp: unset;
+        overflow: visible;
+    }
+}
+.campus-tips-nav {
+    display: flex;
+    justify-content: space-between;
+    gap: 8px;
+}
+.campus-tips-nav-btn {
+    flex: 1;
+    border: 1px solid rgba(146,64,14,0.25);
+    background: rgba(255,255,255,0.6);
+    color: #92400e;
+    padding: 6px 10px;
+    font-size: 12px;
+    font-weight: 600;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background 0.15s;
+}
+.campus-tips-nav-btn:hover:not(:disabled) {
+    background: rgba(255,255,255,0.95);
+}
+.campus-tips-nav-btn:disabled {
+    opacity: 0.4;
+    cursor: default;
+}
+
+@media (max-width: 480px) {
+    .alerts-tips-tab {
+        font-size: 12px;
+        padding: 7px 6px;
+    }
+    .campus-tips-text {
+        font-size: 12px;
+    }
+}
+
+.alert-banner.alert-info {
+    background: #fff8e1;
+    border-left: 5px solid #f59e0b;
+    color: #92400e;
+}
+
+.alert-banner.alert-warning {
+    background: #fff3cd;
+    border-left: 5px solid #f97316;
+    color: #7c2d12;
+}
+
+.alert-banner.alert-emergency {
+    background: #fee2e2;
+    border-left: 5px solid #ef4444;
+    color: #991b1b;
+}
+
+/* Alert Banner */
+.alert-banner {
+    border-radius: 8px;
+    padding: 12px;
+    margin-bottom: 20px;
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    height: 140px;          /* ✅ FIXED height — guarantees exact parity with .campus-tips-card */
+    box-sizing: border-box;
+    overflow: hidden;
+    flex-shrink: 0;
+}
+
+.alert-icon {
+    font-size: 20px;
+    flex-shrink: 0;
+    align-self: flex-start; /* ✅ keeps icon pinned to top instead of stretching to fill height */
+}
+
+.alert-message {
+    font-size: 13px;
+    color: var(--text-dark);
+    line-height: 1.5;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;      /* ✅ caps message at 2 lines regardless of length */
+    line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    word-break: break-word;
+    overflow-wrap: break-word;
+}
+
+/* ── Mobile — show the full announcement instead of clipping it ──
+   The 2-line clamp above exists to keep the card a predictable size on
+   desktop, but on small screens the sidebar is narrower, so text wraps
+   sooner and the same 2-line cap hides much more of the message. Below
+   768px, drop the clamp entirely and let the card grow to fit the text. */
+@media (max-width: 768px) {
+    .alert-banner {
+        align-items: flex-start;   /* keep icon pinned to the top as the card grows */
+        height: auto;
+    }
+
+    .alert-message {
+        display: block;
+        -webkit-line-clamp: unset;
+        line-clamp: unset;
+        overflow: visible;
+        text-overflow: unset;
+        white-space: normal;
+    }
+}
+
+/* Search Box */
+.search-section {
+    margin-bottom: 25px;
+}
+
+.search-box {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: white;
+    border: 1px solid var(--border-gray);
+    border-radius: 12px;
+    padding: 10px 12px;
+    transition: all 0.3s;
+}
+
+.search-box:focus-within {
+    border-color: var(--primary-blue);
+    box-shadow: 0 0 0 3px rgba(44, 90, 160, 0.1);
+}
+
+#searchInput {
+    flex: 1;
+    border: none;
+    background: transparent;
+    font-size: 14px;
+    outline: none;
+    color: var(--text-dark);
+}
+
+#searchInput::placeholder {
+    color: var(--text-gray);
+}
+
+.search-btn {
+    background: transparent;
+    border: none;
+    font-size: 18px;
+    cursor: pointer;
+    padding: 0;
+    transition: transform 0.2s;
+}
+
+.search-btn:hover {
+    transform: scale(1.1);
+}
+
+.search-results {
+    margin-top: 10px;
+    border: 1px solid var(--border-gray);
+    border-radius: 8px;
+    max-height: 300px;
+    overflow-y: auto;
+    background: white;
+    box-shadow: var(--shadow-md);
+}
+
+.search-result-item {
+    padding: 12px 16px;
+    cursor: pointer;
+    border-bottom: 1px solid var(--border-gray);
+    transition: background 0.2s;
+}
+
+.search-result-item:last-child {
+    border-bottom: none;
+}
+
+.search-result-item:hover {
+    background: var(--light-gray);
+}
+
+.result-name {
+    font-weight: 600;
+    color: var(--text-dark);
+    display: block;
+    font-size: 14px;
+}
+
+.result-type {
+    font-size: 12px;
+    color: var(--text-gray);
+    margin-top: 2px;
+}
+
+/* Filter Section */
+.filter-section {
+    margin-bottom: 25px;
+}
+
+.section-title {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text-dark);
+    margin-bottom: 12px;
+}
+
+.category-filters {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(84px, 1fr));
+    gap: 8px;
+}
+
+.category-btn {
+    padding: 8px 12px;
+    background: white;
+    border: 1px solid var(--border-gray);
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-dark);
+    cursor: pointer;
+    transition: all 0.3s;
+    text-align: center;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.category-btn:hover {
+    border-color: var(--primary-blue);
+    background: #f0f7ff;
+}
+
+.category-btn.active {
+    background: var(--primary-blue);
+    color: white;
+    border-color: var(--primary-blue);
+}
+
+/* Map Style Section */
+.map-style-section {
+    margin-bottom: 22px;
+}
+
+.map-style-toggle {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    background: white;
+    padding: 6px;
+    border-radius: 14px;
+    border: 1px solid var(--border-gray);
+    box-shadow: var(--shadow-sm);
+    /* ✅ 8 styles is too tall to sit flat in the sidebar — cap the height
+       and let the list scroll instead of pushing the Legend section down. */
+    max-height: 230px;
+    overflow-y: auto;
+    scrollbar-width: thin;
+}
+
+.map-style-toggle::-webkit-scrollbar {
+    width: 6px;
+}
+
+.map-style-toggle::-webkit-scrollbar-thumb {
+    background: var(--border-gray);
+    border-radius: 10px;
+}
+
+.map-style-toggle .map-style-btn {
+    flex-shrink: 0;
+}
+
+.map-style-btn {
+    border: 1px solid transparent;
+    border-radius: 10px;
+    padding: 10px 12px;
+    background: transparent;
+    color: var(--text-gray);
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-align: left;
+    width: 100%;
+}
+
+.map-style-btn.is-active {
+    background: var(--primary-blue);
+    color: white;
+    border-color: var(--primary-blue);
+    box-shadow: 0 8px 16px rgba(30, 91, 122, 0.2);
+}
+
+/* Map Legend Section */
+.map-legend-section {
+    margin-bottom: 20px;
+}
+
+.legend-items {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 10px;
+    background: white;
+    padding: 15px;
+    border-radius: 8px;
+    border: 1px solid #e0e0e0;
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+}
+
+.legend-marker {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    flex-shrink: 0;
+}
+
+.legend-label {
+    font-size: 13px;
+    color: #555;
+    font-weight: 500;
+    white-space: nowrap;
+}
+
+/* Quick Access Section */
+.quick-access-section {
+    margin-bottom: 25px;
+}
+
+.quick-access-btn {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 16px;
+    background: white;
+    border: 1px solid var(--border-gray);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s;
+    margin-bottom: 10px;
+    font-size: 14px;
+    text-align: left;
+}
+
+.quick-access-btn:hover {
+    border-color: var(--primary-blue);
+    background: #f0f7ff;
+    transform: translateX(4px);
+    box-shadow: var(--shadow-sm);
+}
+
+.quick-icon {
+    font-size: 20px;
+    flex-shrink: 0;
+}
+
+.quick-access-btn:disabled {
+    cursor: not-allowed;
+    opacity: 0.75;
+}
+
+.quick-access-btn:disabled:hover {
+    transform: none;
+    box-shadow: none;
+}
+
+/* Spin the pin icon while a "Find My Location" request is in flight, so
+   there's an obvious loading state beyond just the toast notification. */
+.quick-access-btn.is-loading .quick-icon {
+    display: inline-block;
+    animation: notif-spin 1s linear infinite;
+}
+
+.quick-text {
+    color: var(--text-dark);
+    font-weight: 500;
+}
+
+/* Map Section */
+.map-section {
+    position: relative;
+    background: #eaf0f5;
+    overflow: hidden;
+    min-height: 0;
+}
+
+.map-container {
+    width: 100%;
+    height: 100%;
+    min-height: 0;
+    /* ✅ MapLibre needs to own ALL touch gestures on the map itself — pan,
+       pinch-zoom, and rotate — via its own internal handlers. `pan-x pan-y`
+       (copy-pasted from .main-header above, where blocking pinch-zoom is
+       correct) was telling the BROWSER to intercept pinch gestures instead
+       of letting MapLibre handle them, which is why pinching the map
+       triggered the browser's native page-zoom instead of the map zooming.
+       `none` hands the whole gesture to MapLibre. */
+    touch-action: none;
+    position: relative;
+    z-index: 1;
+}
+
+.map-container .maplibregl-canvas {
+    outline: none;
+    touch-action: none;
+}
+
+.map-3d-container {
+    display: none;
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    border-radius: inherit;
+    touch-action: none;
+}
+
+.ms-offline-banner {
+    display: none;
+    padding: 8px 14px;
+    background: #fff3cd;
+    border-bottom: 1px solid #ffc107;
+    font-size: 12px;
+    font-weight: 600;
+    color: #856404;
+    flex-shrink: 0;
+}
+
+.location-modal-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.location-modal-actions .btn-primary,
+.location-modal-actions .btn-secondary {
+    flex: 1 1 140px;
+}
+
+.map-controls {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    z-index: 2000;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    align-items: flex-end;
+}
+
+.nav-mode-switcher {
+    position: absolute;
+    top: 260px; /* clears the compass/zoom control, which is forced to top:140px !important and spans ~140–248px */
+    right: 16px;
+    z-index: 1000;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 10px;
+    background: rgba(255, 255, 255, 0.96);
+    border-radius: 14px;
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.18);
+    border: 1px solid rgba(0, 0, 0, 0.06);
+    backdrop-filter: blur(6px);
+}
+
+.nav-mode-btn {
+    border: none;
+    background: #f2f5f9;
+    color: var(--text-dark);
+    border-radius: 10px;
+    padding: 8px 12px;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.nav-mode-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 14px rgba(44, 90, 160, 0.18);
+}
+
+.nav-mode-btn.is-active {
+    background: var(--primary-blue);
+    color: white;
+    box-shadow: 0 8px 16px rgba(44, 90, 160, 0.25);
+}
+
+.map-control-btn {
+    border: none;
+    background: white;
+    color: var(--primary-blue);
+    border-radius: 999px;
+    padding: 10px 14px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    box-shadow: var(--shadow-md);
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.map-control-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+}
+
+.map-control-btn:active {
+    transform: translateY(0);
+}
+
+.building-toggle {
+    background: var(--primary-blue);
+    color: #fff;
+}
+
+.building-toggle:hover {
+    background: var(--dark-blue);
+}
+
+.center-map-btn {
+    width: 52px;
+    height: 52px;
+    padding: 0;
+    border-radius: 50%;
+    background: var(--primary-blue);
+    color: white;
+    font-size: 22px;
+    justify-content: center;
+}
+
+.center-map-btn:hover {
+    background: var(--dark-blue);
+}
+
+.building-panel {
+    position: absolute;
+    top: 70px;
+    right: 16px;
+    z-index: 1000;
+    width: min(320px, 84vw);
+    max-height: min(45vh, 420px);
+    overflow: hidden;
+    background: rgba(255, 255, 255, 0.98);
+    border-radius: 16px;
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.2);
+    padding: 12px;
+    display: none;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.building-panel-scroll {
+    flex: 1;
+    overflow-y: auto;
+    scrollbar-gutter: stable;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.building-panel-open .building-panel {
+    top: 96px;
+}
+
+.building-panel-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    padding: 2px 4px 0 4px;
+}
+
+.building-panel-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--text-dark);
+    letter-spacing: 0.2px;
+}
+
+.building-panel-close {
+    border: 1px solid #d7dde5;
+    background: #ffffff;
+    color: #1f2a37;
+    font-size: 12px;
+    font-weight: 700;
+    padding: 6px 10px;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.building-panel-close:hover {
+    border-color: var(--primary-blue);
+    box-shadow: 0 6px 14px rgba(15, 58, 82, 0.18);
+    transform: translateY(-1px);
+}
+
+.building-panel-hint {
+    font-size: 11px;
+    color: #7b8794;
+    margin: 0 0 4px 2px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+}
+
+.building-panel-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.building-card {
+    border-radius: 12px;
+    overflow: hidden;
+    cursor: pointer;
+    border: 2px solid transparent;
+    transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+    background: #f5f5f5;
+    position: relative;
+}
+
+.building-card:hover {
+    border-color: var(--primary-blue);
+    transform: translateY(-1px) scale(1.01);
+    box-shadow: 0 8px 18px rgba(15, 58, 82, 0.18);
+}
+
+.building-card-image {
+    width: 100%;
+    height: clamp(76px, 16vw, 110px);
+    object-fit: cover;
+    display: block;
+}
+
+.building-card-title {
+    padding: 8px 10px 10px;
+    font-size: 12px;
+    font-weight: 600;
+    color: #222;
+}
+
+/* Zoom + compass controls: visible on desktop, hidden on mobile
+   (touch devices already support pinch-zoom and two-finger rotate natively) */
+@media (max-width: 768px) {
+    .maplibregl-ctrl-top-right .maplibregl-ctrl-group {
+        display: none;
+    }
+}
+
+.route-info-card {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    background: white;
+    padding: 0;
+    border-radius: 14px;
+    box-shadow: var(--shadow-lg);
+    width: min(400px, 90vw);
+    max-height: min(85vh, 650px);
+    height: auto;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    z-index: 1000;
+    transform: translate(-50%, -50%);
+    border: 1px solid #e4e9f0;
+}
+.route-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+    padding-bottom: 12px;
+    border-bottom: 2px solid var(--light-gray);
+}
+
+.route-header h3 {
+    font-size: 16px;
+    color: var(--primary-blue);
+    font-weight: 600;
+}
+
+.close-btn {
+    background: transparent;
+    border: none;
+    font-size: 24px;
+    color: var(--text-gray);
+    cursor: pointer;
+    padding: 0;
+    transition: all 0.2s;
+}
+
+.close-btn:hover {
+    color: var(--text-dark);
+    transform: scale(1.2);
+}
+
+.route-details {
+    font-size: 14px;
+    line-height: 1.6;
+}
+
+.route-step {
+    padding: 10px 0;
+    border-bottom: 1px solid var(--light-gray);
+    color: var(--text-dark);
+}
+
+.route-step:last-child {
+    border-bottom: none;
+}
+
+/* Location Modal */
+.location-title {
+    color: var(--primary-blue);
+    font-size: 22px;
+    margin-bottom: 20px;
+}
+
+.location-details {
+    font-size: 14px;
+    line-height: 1.8;
+    margin-bottom: 20px;
+}
+
+.location-details p {
+    margin-bottom: 10px;
+}
+
+.location-details strong {
+    color: var(--text-dark);
+    font-weight: 600;
+}
+
+.location-details ul {
+    margin-left: 20px;
+    margin-top: 8px;
+}
+
+.location-details li {
+    margin-bottom: 5px;
+}
+
+/* Buttons */
+button {
+    font-family: inherit;
+}
+
+.btn-primary {
+    background: var(--primary-blue);
+    color: white;
+    padding: 12px 24px;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.3s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.btn-primary:hover {
+    background: var(--dark-blue);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+}
+
+.btn-secondary {
+    background: white;
+    color: var(--primary-blue);
+    padding: 12px 24px;
+    border: 2px solid var(--primary-blue);
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.3s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.btn-secondary:hover {
+    background: var(--primary-blue);
+    color: white;
+}
+
+.modal-actions {
+    display: flex;
+    gap: 12px;
+    margin-top: 20px;
+}
+
+.modal-actions button {
+    flex: 1;
+}
+
+/* Modal Styles */
+.modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 2000;
+    align-items: center;
+    justify-content: center;
+}
+
+.modal.active {
+    display: flex;
+}
+
+.modal-content {
+    background: white;
+    border-radius: 16px;
+    padding: 30px;
+    max-width: 600px;
+    width: 90%;
+    max-height: 80vh;
+    overflow-y: auto;
+    position: relative;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+}
+
+/* Header row: title + close button share a flex row, so the button can
+   never overlap the title text (it's laid out beside it, not floated on
+   top of it) regardless of how long the title is or how narrow the screen
+   gets. Sticky-positioned so it also stays visible if the modal body
+   scrolls, instead of scrolling away with the content below it. */
+.modal-header-row {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+    position: sticky;
+    top: 0;
+    margin: -30px -30px 20px;
+    padding: 30px 30px 12px;
+    background: white;
+    z-index: 10;
+}
+
+/* Simple Close Modal Button */
+.close-modal {
+    flex-shrink: 0;
+    width: 35px;
+    height: 35px;
+    background: #f0f0f0;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 24px;
+    cursor: pointer;
+    color: #666;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+}
+
+.close-modal:hover {
+    background: #e0e0e0;
+    color: #333;
+}
+
+.location-title {
+    margin-bottom: 0;
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+    .modal-content {
+        width: 95%;
+        padding: 20px;
+        max-height: 90vh;
+    }
+
+    .modal-header-row {
+        top: 0;
+        margin: -20px -20px 16px;
+        padding: 20px 20px 10px;
+        gap: 8px;
+    }
+
+    /* 40px keeps the tap target comfortably above the ~44px accessibility
+       guideline while still fitting narrow screens; kept slightly under
+       44 only because of the existing 20px modal padding budget. */
+    .close-modal {
+        width: 40px;
+        height: 40px;
+        font-size: 22px;
+    }
+
+    .location-title {
+        font-size: 20px;
+    }
+}
+/* Mobile Menu Toggle */
+.mobile-menu-toggle {
+    position: fixed;
+    bottom: calc(24px + env(safe-area-inset-bottom));
+    right: 12px;        /* ✅ changed from left: 16px */
+    left: auto;         /* ✅ remove left positioning */
+    width: 52px;
+    height: 52px;
+    background: var(--primary-blue);
+    border: none;
+    border-radius: 50%;
+    box-shadow: var(--shadow-lg);
+    cursor: pointer;
+    z-index: 2000;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    transition: all 0.3s;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+    pointer-events: auto;
+}
+
+.mobile-menu-toggle:hover {
+    transform: scale(1.1);
+}
+
+.menu-icon {
+    width: 24px;
+    height: 3px;
+    background: white;
+    border-radius: 2px;
+    transition: all 0.3s;
+}
+
+.mobile-menu-toggle.active .menu-icon:nth-child(1) {
+    transform: translateY(7px) rotate(45deg);
+}
+
+.mobile-menu-toggle.active .menu-icon:nth-child(2) {
+    opacity: 0;
+}
+
+.mobile-menu-toggle.active .menu-icon:nth-child(3) {
+    transform: translateY(-7px) rotate(-45deg);
+}
+
+@media (min-width: 769px) {
+    .mobile-menu-toggle {
+        display: none;
+    }
+}
+
+.sidebar-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.35);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s ease;
+    z-index: 1000;
+}
+
+.sidebar-overlay.active {
+    opacity: 1;
+    pointer-events: all;
+}
+
+body.sidebar-open {
+    overflow: hidden;
+}
+
+
+
+.popup-title {
+    font-size: 16px;
+    font-weight: 600;
+    margin-bottom: 8px;
+    color: var(--primary-blue);
+}
+
+.popup-type {
+    font-size: 12px;
+    color: var(--text-gray);
+    margin-bottom: 10px;
+    text-transform: capitalize;
+}
+
+.popup-rooms {
+    font-size: 13px;
+    margin-bottom: 10px;
+}
+
+.popup-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 10px;
+}
+
+.popup-btn {
+    padding: 8px 12px;
+    background: var(--primary-blue);
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: 12px;
+    cursor: pointer;
+    flex: 1;
+    transition: all 0.2s;
+}
+
+.popup-btn:hover {
+    background: var(--dark-blue);
+}
+
+.popup-btn.secondary {
+    background: white;
+    color: var(--primary-blue);
+    border: 1px solid var(--primary-blue);
+}
+
+.popup-btn.secondary:hover {
+    background: var(--light-gray);
+}
+
+/* Utility Classes */
+.hidden {
+    display: none !important;
+}
+
+/* User Location Marker Styles */
+.user-location-marker {
+    position: relative;
+}
+
+/* Flashlight-style heading beam — sits behind the pulse ring and dot.
+   Direction is driven by the --user-heading custom property (set from JS
+   whenever device/GPS heading is available); it defaults to 0deg (north-up)
+   so the beam still looks intentional when no heading data exists yet. */
+.user-marker-beam {
+    position: absolute;
+    width: 140px;
+    height: 140px;
+    top: -55px;
+    left: -55px;
+    border-radius: 50%;
+    background: conic-gradient(
+        from calc(var(--user-heading, 0deg) - 32deg),
+        rgba(66, 133, 244, 0) 0deg,
+        rgba(66, 133, 244, 0.5) 32deg,
+        rgba(66, 133, 244, 0.22) 50deg,
+        rgba(66, 133, 244, 0) 64deg,
+        rgba(66, 133, 244, 0) 360deg
+    );
+    -webkit-mask-image: radial-gradient(circle at center, rgba(0,0,0,1) 0%, rgba(0,0,0,0.95) 40%, rgba(0,0,0,0) 100%);
+    mask-image: radial-gradient(circle at center, rgba(0,0,0,1) 0%, rgba(0,0,0,0.95) 40%, rgba(0,0,0,0) 100%);
+    pointer-events: none;
+    z-index: 0;
+    /* No CSS transition here — the beam's direction is now smoothed frame-
+       by-frame in JS (shortest-path easing), which is what actually
+       prevents jitter/snapping. A CSS transition on top of that would just
+       fight it and add lag. */
+    will-change: background;
+}
+
+.user-marker-pulse {
+    position: absolute;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background: rgba(66, 133, 244, 0.3);
+    animation: pulse-ring 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    top: 0;
+    left: 0;
+}
+
+.user-marker-dot {
+    position: absolute;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: #4285f4;
+    border: 3px solid white;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    top: 7px;
+    left: 7px;
+    z-index: 1;
+}
+
+@keyframes pulse-ring {
+    0% {
+        transform: scale(0.8);
+        opacity: 1;
+    }
+    100% {
+        transform: scale(2.5);
+        opacity: 0;
+    }
+}
+
+
+
+/* Notification Toast */
+.notification-toast {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background: white;
+    padding: 15px 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    z-index: 10000;
+    transform: translateX(400px);
+    transition: transform 0.3s ease;
+    max-width: 300px;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.notification-toast.show {
+    transform: translateX(0);
+}
+
+.notification-toast.success {
+    border-left: 4px solid #34a853;
+    color: #34a853;
+}
+
+.notification-toast.error {
+    border-left: 4px solid #ea4335;
+    color: #ea4335;
+}
+
+.notification-toast.info {
+    border-left: 4px solid #4285f4;
+    color: #4285f4;
+}
+
+.notification-toast.loading {
+    border-left: 4px solid #4285f4;
+    color: #1a2b3c;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.notification-spinner {
+    width: 14px;
+    height: 14px;
+    flex-shrink: 0;
+    border: 2px solid rgba(66, 133, 244, 0.25);
+    border-top-color: #4285f4;
+    border-radius: 50%;
+    animation: notif-spin 0.7s linear infinite;
+}
+
+@keyframes notif-spin {
+    to { transform: rotate(360deg); }
+}
+
+/* Improved Route Info Card Styling */
+.route-summary {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 15px;
+}
+
+.route-stat {
+    font-size: 14px;
+    color: var(--text-dark);
+    padding: 8px 12px;
+    background: #f8f9fa;
+    border-radius: 6px;
+    border-left: 3px solid var(--primary-blue);
+}
+
+.route-stat strong {
+    color: var(--primary-blue);
+}
+
+.route-divider {
+    height: 2px;
+    background: linear-gradient(to right, var(--primary-blue), transparent);
+    margin: 15px 0;
+}
+
+.route-directions {
+    margin-top: 15px;
+}
+
+.route-directions > strong {
+    display: block;
+    margin-bottom: 12px;
+    color: var(--primary-blue);
+    font-size: 14px;
+}
+
+.route-step {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 12px;
+    margin-bottom: 8px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    transition: all 0.3s;
+}
+
+.route-step:hover {
+    background: #e9ecef;
+    transform: translateX(4px);
+}
+
+.step-number {
+    min-width: 28px;
+    height: 28px;
+    background: var(--primary-blue);
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    font-size: 13px;
+    flex-shrink: 0;
+}
+
+.step-text {
+    flex: 1;
+    font-size: 13px;
+    line-height: 1.6;
+    color: var(--text-dark);
+}
+
+/* Waypoint Marker Animation */
+.waypoint-marker {
+    animation: bounce 2s ease-in-out infinite;
+}
+
+@keyframes bounce {
+    0%, 100% {
+        transform: translateY(0);
+    }
+    50% {
+        transform: translateY(-5px);
+    }
+}
+
+
+
+/* Enhanced route info card */
+.route-summary {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 15px;
+}
+
+.route-stat {
+    font-size: 14px;
+    color: var(--text-dark);
+    padding: 10px 14px;
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border-radius: 8px;
+    border-left: 4px solid var(--primary-blue);
+    transition: transform 0.2s;
+}
+
+.route-stat:hover {
+    transform: translateX(4px);
+}
+
+.route-stat strong {
+    color: var(--primary-blue);
+}
+
+.route-divider {
+    height: 2px;
+    background: linear-gradient(to right, var(--primary-blue), transparent);
+    margin: 15px 0;
+}
+
+.route-directions {
+    margin-top: 15px;
+    overflow-y: auto;
+    flex: 1;
+    min-height: 0;
+}
+#msProgressBar {
+    flex-shrink: 0;
+    max-height: 150px;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+#routeDetails {
+    overflow-y: auto;
+    flex: 1;
+    min-height: 0;
+    padding: 10px 14px;
+    -webkit-overflow-scrolling: touch;
+}
+.route-directions > strong {
+    display: block;
+    margin-bottom: 12px;
+    color: var(--primary-blue);
+    font-size: 15px;
+}
+
+.route-step {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 12px;
+    margin-bottom: 8px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    transition: all 0.3s;
+    border-left: 3px solid transparent;
+}
+
+.route-step:hover {
+    background: #e9ecef;
+    transform: translateX(5px);
+    border-left-color: var(--primary-blue);
+}
+
+.step-number {
+    min-width: 30px;
+    height: 30px;
+    background: linear-gradient(135deg, var(--primary-blue) 0%, #1e3a5f 100%);
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 13px;
+    flex-shrink: 0;
+    box-shadow: 0 2px 4px rgba(44, 90, 160, 0.3);
+}
+
+.step-text {
+    flex: 1;
+    font-size: 14px;
+    line-height: 1.6;
+    color: var(--text-dark);
+}
+
+.step-text small {
+    display: inline-block;
+    margin-top: 4px;
+    font-size: 12px;
+}
+
+/* Scrollbar for directions */
+.route-directions::-webkit-scrollbar {
+    width: 6px;
+}
+
+.route-directions::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 10px;
+}
+
+.route-directions::-webkit-scrollbar-thumb {
+    background: var(--primary-blue);
+    border-radius: 10px;
+}
+
+.route-directions::-webkit-scrollbar-thumb:hover {
+    background: #1e3a5f;
+}
+
+/* Dotted end line styling - consistent at all zoom levels */
+.dotted-end-line {
+    stroke-linecap: round !important;
+    stroke-linejoin: round !important;
+}
+
+/* Ensure consistent appearance */
+path.dotted-end-line {
+    vector-effect: non-scaling-stroke;
+}
+
+/* Building Labels on Map - Always Visible */
+.building-label {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    pointer-events: none; /* Labels don't block clicks */
+}
+
+.building-label-container {
+    background: rgba(255, 255, 255, 0.95);
+    padding: 6px 14px;
+    border-radius: 6px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+    border: 2px solid #2c5aa0;
+    white-space: nowrap;
+    text-align: center;
+    position: relative;
+    transform: translateY(-100%); /* Position above the building */
+    margin-top: -10px; /* Add gap between label and building */
+    display: inline-block;
+}
+
+.building-label-text {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    color: #1a1a1a;
+    letter-spacing: 0.3px;
+    line-height: 1.2;
+}
+
+
+
+/* Responsive label sizing based on map zoom */
+@media (max-width: 768px) {
+    .building-label-text {
+        font-size: 11px;
+    }
+    
+    .building-label-container {
+        padding: 5px 10px;
+        margin-top: -8px;
+    }
+}
+
+@media (max-width: 480px) {
+    .building-label-text {
+        font-size: 10px;
+    }
+    
+    .building-label-container {
+        padding: 4px 8px;
+        margin-top: -6px;
+    }
+}
+
+/* Custom Popup with Image */
+.building-popup-with-image.maplibregl-popup .maplibregl-popup-content {
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+    border: 2px solid #2c5aa0;
+    margin: 0;
+    min-width: min(400px, 85vw);
+    /* Desktop: text sits beside the image, so a little right padding is
+       enough to clear the close button without wasting width. */
+    padding: 12px 40px 12px 12px;
+}
+
+.building-popup-with-image.maplibregl-popup .maplibregl-popup-tip {
+    border-top-color: #2c5aa0;
+}
+
+.custom-popup-with-image {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* Popup close button styling — matches .close-modal design */
+.building-popup-with-image.maplibregl-popup .maplibregl-popup-close-button {
+    top: 10px !important;
+    right: 10px !important;
+    width: 32px !important;
+    height: 32px !important;
+    line-height: 32px !important;
+    background: #f3f4f6;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    font-size: 18px !important;
+    color: #6b7280 !important;
+    font-weight: 400 !important;
+    padding: 0 !important;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.15s;
+    text-decoration: none !important;
+}
+
+.building-popup-with-image.maplibregl-popup .maplibregl-popup-close-button:hover {
+    background: #e5e7eb;
+    border-color: #9ca3af;
+    color: #374151 !important;
+}
+
+/* Mobile responsive */
+@media (max-width: 768px) {
+    .custom-popup-with-image {
+        flex-direction: column !important;
+        min-width: 280px !important;
+    }
+    
+    .custom-popup-with-image > div:last-child {
+        width: 100% !important;
+        height: 160px !important;
+    }
+
+    /* ✅ Default MapLibre popups anchor to the clicked marker, so their
+       on-screen position/size varies with where you tapped — that's the
+       "messed up" look. Force this one into a fixed, centered card with
+       a capped height, same treatment as #ai-chat-window and .building-panel,
+       instead of letting MapLibre free-position it. */
+    .building-popup-with-image.maplibregl-popup {
+        position: fixed !important;
+        top: 50% !important;
+        left: 50% !important;
+        right: auto !important;
+        bottom: auto !important;
+        transform: translate(-50%, -50%) !important;
+        margin: 0 !important;
+        width: min(360px, calc(100vw - 32px));
+        max-width: none !important;
+        z-index: 3000;
+    }
+
+    .building-popup-with-image .maplibregl-popup-tip {
+        display: none !important;
+    }
+
+    .building-popup-with-image.maplibregl-popup .maplibregl-popup-content,
+    .building-popup-with-image .leaflet-popup-content {
+        min-width: 0 !important;
+        width: 100%;
+        max-height: min(75vh, 520px);
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+        /* On mobile the layout stacks into a single column, so the close
+           button (top:10px, 32px tall) only needs clearance ABOVE the
+           title — not a permanent right-side gutter running the full
+           height of the card. Extra top padding pushes the title down
+           below the button instead of squeezing width beside it. */
+        padding: 42px 12px 12px 12px !important;
+    }
+}
+
+@media (max-width: 359px) {
+    .main-header {
+        padding: 14px 10px;
+    }
+    .header-title {
+        font-size: 17px;
+    }
+    .header-subtitle {
+        font-size: 11px;
+    }
+    .sidebar > div {
+        padding: 10px;
+    }
+    .category-btn {
+        padding: 7px 8px;
+        font-size: 12px;
+    }
+    .quick-access-btn {
+        padding: 11px 12px;
+        font-size: 13px;
+    }
+    .search-box {
+        min-height: 44px;
+    }
+}
+
+@media (max-width: 400px) {
+    .building-popup-with-image.maplibregl-popup {
+        width: calc(100vw - 24px);
+    }
+
+    .custom-popup-with-image > div:last-child {
+        height: 130px !important;
+    }
+}
+
+/* Image hover effect */
+.custom-popup-with-image img {
+    transition: transform 0.3s ease;
+}
+
+.custom-popup-with-image img:hover {
+    transform: scale(1.05);
+}
+
+/* Room Marker Animations */
+.room-marker-wrapper {
+    animation: roomMarkerAppear 0.3s ease-out;
+}
+
+@keyframes roomMarkerAppear {
+    0% {
+        transform: scale(0);
+        opacity: 0;
+    }
+    50% {
+        transform: scale(1.2);
+    }
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+.room-marker-icon:hover {
+    transform: scale(1.15);
+    transition: transform 0.2s ease;
+}
+
+/* Room Popup Styling */
+.room-popup-styled.maplibregl-popup .maplibregl-popup-content {
+    border-radius: 12px;
+    box-shadow: 0 8px 24px rgba(156, 39, 176, 0.3);
+}
+
+.room-popup-styled.maplibregl-popup .maplibregl-popup-tip {
+    border-top-color: white !important;
+    border-bottom-color: white !important;
+}
+
+/* Text Label Markers - Fixed size on all zoom levels */
+.text-label-marker {
+    /* Prevent label from scaling with map zoom */
+    width: auto !important;
+    height: auto !important;
+}
+
+.text-label-marker > div {
+    /* Center the label exactly on coordinates */
+    position: absolute;
+    top: 0;
+    left: 0;
+    transform: translate(-50%, -50%);
+    
+    /* Consistent appearance */
+    background: #2c5aa0;
+    color: white;
+    padding: 6px 10px;
+    border-radius: 16px;
+    font-weight: 700;
+    font-size: 12px;
+    font-family: 'Segoe UI', Arial, sans-serif;
+    text-align: center;
+    border: 2px solid white;
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.3);
+    white-space: nowrap;
+    cursor: pointer;
+    transition: all 0.2s;
+    pointer-events: auto;
+}
+
+/* Hover effect */
+.text-label-marker > div:hover {
+    transform: translate(-50%, -50%) scale(1.1);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+    z-index: 1000;
+}
+
+/* Type-specific colors */
+.text-label-marker.administration > div {
+    background: #2c5aa0;
+}
+
+.text-label-marker.department > div {
+    background: #34A853;
+}
+
+.text-label-marker.facilities > div {
+    background: #FBBC04;
+}
+
+.text-label-marker.office > div {
+    background: #EA4335;
+}
+
+.text-label-marker.landmark > div {
+    background: #9C27B0;
+}
+
+/* Mobile responsive */
+    @media (max-width: 768px) {
+    #msProgressBar {
+        max-height: 120px;
+        overflow-y: auto;
+        flex-shrink: 0;
+    }
+
+    #msStopNames {
+        max-height: 80px;
+        overflow-y: auto;
+    }
+
+    #routeDetails {
+        overflow-y: auto;
+        flex: 1;
+        min-height: 0;
+        padding: 8px 12px;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .route-header {
+        flex-shrink: 0;
+        padding: 10px 12px;
+        margin-bottom: 0;
+    }
+
+    /* Fixed sections that should never scroll */
+    #msArrivedSection,
+    #msAddStopWrapper,
+    #msOfflineBanner {
+        flex-shrink: 0;
+    }
+}   
+
+
+/* Route info card actions */
+.route-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.route-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.route-btn {
+    width: 32px;
+    height: 32px;
+    border: none;
+    border-radius: 50%;
+    background: #f1f3f5;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s;
+    font-size: 18px;
+    color: #495057;
+}
+
+.route-btn:hover {
+    background: #e9ecef;
+    transform: scale(1.1);
+}
+
+.minimize-btn:hover {
+    background: #4285f4;
+    color: white;
+}
+
+.close-btn:hover {
+    background: #ea4335;
+    color: white;
+}
+
+
+
+/* Default popup styling (MapLibre uses one content element, not a separate wrapper) */
+.maplibregl-popup-content {
+    border-radius: 12px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+    border: 2px solid #2c5aa0;
+    margin: 0;
+    /* Top padding clears the close button (see the more specific
+       .maplibregl-popup-content rule further down, which currently wins
+       via !important) instead of a right-side gutter. */
+    padding: 44px 16px 12px 16px;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    text-align: center;
+}
+
+/* ✅ Default close button for EVERY popup (2D building/room popups, AND the
+   3D view's popup, which has no className and was previously falling back
+   to MapLibre's plain, unstyled default X). This is the same design that
+   .building-popup-with-image already used below — making it the baseline
+   here means any current or future popup gets a consistent close button
+   without needing its own override. */
+.maplibregl-popup-close-button {
+    top: 10px !important;
+    right: 10px !important;
+    width: 32px !important;
+    height: 32px !important;
+    line-height: 32px !important;
+    background: #f3f4f6;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    font-size: 18px !important;
+    color: #6b7280 !important;
+    font-weight: 400 !important;
+    padding: 0 !important;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.15s;
+    text-decoration: none !important;
+}
+
+.maplibregl-popup-close-button:hover {
+    background: #e5e7eb;
+    border-color: #9ca3af;
+    color: #374151 !important;
+}
+
+.maplibregl-popup-tip {
+    border-top-color: #2c5aa0 !important;
+    border-bottom-color: #2c5aa0 !important;
+}
+.building-tooltip {
+    background: rgba(0, 0, 0, 0.75);
+    color: white;
+    border: none;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: bold;
+    padding: 4px 8px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+}
+.building-tooltip::before {
+    display: none;
+}
+
+/* Mobile adjustments */
+@media (max-width: 768px) {
+.route-info-card {
+        position: fixed;
+        left: 50%;
+        bottom: calc(24px + env(safe-area-inset-bottom));
+        top: auto;
+        transform: translateX(-50%);
+        width: min(380px, 94vw);
+        max-height: 55vh;
+        height: auto;
+        padding: 0;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        border-radius: 14px;
+        z-index: 2500;
+    }
+
+    #msProgressBar {
+        max-height: 120px;
+        overflow-y: auto;
+        flex-shrink: 0;
+    }
+
+    #msStopNames {
+        max-height: 80px;
+        overflow-y: auto;
+    }
+
+    #routeDetails {
+        overflow-y: auto;
+        flex: 1;
+        min-height: 0;
+        padding: 8px 12px;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .route-header {
+        flex-shrink: 0;
+        padding: 10px 12px;
+        margin-bottom: 0;
+    }
+
+    #msArrivedSection,
+    #msAddStopWrapper,
+    #msOfflineBanner {
+        flex-shrink: 0;
+    }
+
+    .route-stat {
+        font-size: 13px;
+        padding: 6px 10px;
+    }
+
+    .step-number {
+        min-width: 24px;
+        height: 24px;
+        font-size: 12px;
+    }
+
+    .step-text {
+        font-size: 12px;
+    }
+
+    .route-directions {
+        max-height: 300px;
+    }
+}
+    
+@keyframes markerPulseAnim {
+    0% {
+        transform: scale(0.8);
+        opacity: 1;
+    }
+    70% {
+        transform: scale(2);
+        opacity: 0;
+    }
+    100% {
+        transform: scale(0.8);
+        opacity: 0;
+    }
+}
+@keyframes bounceArrow {
+    0%, 100% { transform: translateY(0px); }
+    50%       { transform: translateY(-10px); }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .notification-toast {
+        top: 10px;
+        right: 10px;
+        left: 10px;
+        max-width: none;
+    }
+}
+
+@media (max-width: 768px) {
+    .app-container {
+        padding: 0;
+    }
+
+    .main-wrapper {
+        border-radius: 0;
+    }
+
+    .main-header {
+        padding: 20px 15px;
+        background: linear-gradient(135deg, var(--primary-blue) 0%, var(--dark-blue) 100%);
+    }
+
+    .header-content {
+        flex-direction: column;
+        align-items: center;
+        gap: 12px;
+        text-align: center;
+    }
+
+    .header-left {
+        flex-direction: column;
+        align-items: center;
+        width: 100%;
+    }
+
+    .header-icon {
+        width: 42px;
+        height: 42px;
+        margin-bottom: 8px;
+    }
+
+    .header-text {
+        width: 100%;
+        text-align: center;
+    }
+
+    .header-title {
+        font-size: 24px;
+        white-space: normal;
+        overflow: visible;
+        text-overflow: clip;
+        font-weight: 600;
+    }
+
+    .header-subtitle {
+        font-size: 14px;
+        white-space: normal;
+        overflow: visible;
+        text-overflow: clip;
+        margin-top: 5px;
+        opacity: 0.95;
+    }
+
+    .header-right {
+        width: 100%;
+        flex-direction: row;
+        align-items: center;
+        justify-content: center;
+        gap: 15px;
+    }
+
+    .header-right-content {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        gap: 15px;
+        font-size: 14px;
+    }
+
+    .header-time {
+        font-size: 16px;
+        font-weight: 600;
+    }
+
+    .main-container {
+        grid-template-columns: 1fr;
+        height: calc(var(--app-vh) * 100 - 150px);
+        min-height: 440px;
+    }
+
+    /* Short-height / landscape phones — the 440px floor above can exceed
+        the actual viewport height when rotated (e.g. ~375px tall), forcing
+       needless scrolling. Let the container shrink to fit instead. */
+    @media (max-height: 480px) and (orientation: landscape) {
+        .main-header {
+            padding: 8px 14px;
+        }
+        .header-content {
+            flex-direction: row;
+            gap: 10px;
+        }
+        .header-subtitle {
+            display: none;
+        }
+        .main-container {
+            height: calc(var(--app-vh) * 100 - 60px);
+            min-height: 0;
+        }
+        .sidebar {
+            padding: 12px 14px 16px;
+        }
+    }
+
+    .sidebar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        bottom: 0;
+        width: min(78vw, 320px);
+        height: 100dvh;
+        z-index: 1001;
+        transform: translateX(-100%);
+        transition: transform 0.3s ease;
+        box-shadow: var(--shadow-lg);
+        padding: 18px 16px 24px;
+        border-radius: 0 18px 18px 0;
+        background: var(--surface-muted);
+    }
+
+    .sidebar.active {
+        transform: translateX(0) !important;
+    }
+
+    .sidebar::before {
+        content: "";
+        width: 4px;
+        height: 44px;
+        background: #d0d7de;
+        border-radius: 999px;
+        display: block;
+        margin: 12px 0 16px 6px;
+    }
+
+    .search-section {
+        position: sticky;
+        top: 0;
+        background: var(--surface-muted);
+        padding-top: 6px;
+        z-index: 2;
+    }
+
+    .mobile-menu-toggle {
+        display: flex;
+        width: 52px;
+        height: 52px;
+    }
+
+    .map-controls {
+        top: 12px;   /* was 0px — increase to move it down */
+        bottom: auto;
+        right: 12px;
+    }
+
+    .nav-mode-switcher {
+        top: calc(12px + env(safe-area-inset-top));
+        right: auto;
+        bottom: auto;
+        left: 50%;
+        transform: translateX(-50%);
+        flex-direction: row;
+        gap: 6px;
+        padding: 6px;
+        max-width: 92vw;
+    }
+
+    .nav-mode-btn {
+        padding: 6px 10px;
+        font-size: 11px;
+        border-radius: 8px;
+    }
+
+    .map-control-btn {
+        font-size: 12px;
+        padding: 10px 12px;
+        min-height: 44px;
+    }
+
+    .center-map-btn {
+        position: fixed !important;
+        bottom: calc(88px + env(safe-area-inset-bottom));
+        right: 12px;
+        top: auto;
+        width: 52px;
+        height: 52px;
+        font-size: 20px;
+        z-index: 2000;
+    }
+ .building-panel {
+        position: fixed;
+        top: 12vh;
+        left: 50%;
+        right: auto;
+        bottom: auto;
+        transform: translate(-50%, -50%);
+        width: min(480px, calc(100vw - 32px));
+        max-height: min(52vh, 380px);
+        /* Below .map-controls / .center-map-btn (z-index 2000) so the
+           Buildings toggle and locate button stay visible/tappable
+           while this panel is open, instead of getting covered. */
+        z-index: 1500;
+        overflow: hidden;
+    }
+
+    .building-panel-open .building-panel {
+        top: 44vh;
+    }
+
+    .building-panel-list {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+    }
+    
+    .building-card-image {
+        height: 100px;
+    }
+    .route-header h3 {
+        font-size: 14px;
+    }
+
+    .route-details {
+        font-size: 13px;
+    }
+
+    .modal {
+        padding: 12px;
+    }
+
+    .modal-content {
+        width: 100%;
+        max-width: 100%;
+        border-radius: 14px;
+        padding: 18px;
+    }
+
+    .btn-primary {
+        min-height: 46px;
+    }
+}
+
+@media (max-width: 480px) {
+    .main-header {
+        padding: 18px 12px;
+    }
+
+    .header-icon {
+        font-size: 42px;
+    }
+
+    .header-title {
+        font-size: 20px;
+    }
+
+    .header-subtitle {
+        font-size: 13px;
+    }
+
+    .header-right-content {
+        gap: 12px;
+    }
+    
+    .header-time {
+        font-size: 15px;
+    }
+
+    .main-container {
+        height: calc(var(--app-vh) * 100 - 132px);
+        min-height: 420px;
+    }
+
+    /* ... rest of your 480px styles ... */
+}
+
+/* UX refresh: clearer hierarchy and friendlier controls */
+.sidebar > div {
+    background: #ffffff;
+    border: 1px solid #e8edf3;
+    border-radius: 14px;
+    padding: 14px;
+    box-shadow: 0 4px 14px rgba(15, 58, 82, 0.05);
+}
+
+.search-helper-text {
+    margin-bottom: 10px;
+    color: #4f5f73;
+    font-size: 12px;
+    line-height: 1.45;
+}
+
+.section-title {
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: #3f4f62;
+}
+
+.search-box {
+    border-radius: 12px;
+    min-height: 48px;
+}
+
+#searchInput {
+    font-size: 14px;
+}
+
+.search-btn {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    background: #e9f2ff;
+}
+
+.search-btn:hover {
+    background: #d9eafe;
+    transform: none;
+}
+
+.category-btn,
+.map-style-btn,
+.quick-access-btn,
+.map-control-btn,
+.btn-primary,
+.route-btn,
+.close-modal {
+    transition: box-shadow 0.2s ease, transform 0.2s ease, background-color 0.2s ease, border-color 0.2s ease;
+}
+
+.category-btn:focus-visible,
+.map-style-btn:focus-visible,
+.quick-access-btn:focus-visible,
+.map-control-btn:focus-visible,
+.btn-primary:focus-visible,
+.route-btn:focus-visible,
+.close-modal:focus-visible,
+#searchInput:focus-visible {
+    outline: 3px solid rgba(44, 90, 160, 0.25);
+    outline-offset: 2px;
+}
+
+.category-btn {
+    min-height: 36px;
+}
+
+.category-filters {
+    grid-template-columns: repeat(2, 1fr);
+}
+
+.quick-access-btn {
+    border-radius: 12px;
+    min-height: 48px;
+}
+
+.quick-access-btn:hover {
+    transform: translateX(0);
+}
+
+.map-style-toggle {
+    padding: 4px;
+    border-radius: 12px;
+}
+
+.legend-items {
+    border-radius: 12px;
+}
+
+.legend-marker {
+    width: 14px;
+    height: 14px;
+    box-shadow: none;
+}
+
+.legend-label {
+    font-size: 13px;
+    color: #2f3c4c;
+}
+
+.main-header {
+    padding: 18px 24px;
+}
+
+.header-title {
+    font-size: 22px;
+    line-height: 1.25;
+}
+
+.header-subtitle {
+    font-size: 13px;
+}
+
+.map-control-btn {
+    min-height: 42px;
+}
+
+.route-info-card {
+    border: 1px solid #e4e9f0;
+    border-radius: 14px;
+}
+
+.route-btn {
+    width: 34px;
+    height: 34px;
+}
+
+.modal-content {
+    border: 1px solid #e7ebf2;
+}
+
+@media (max-width: 768px) {
+    .sidebar {
+        background: #f7fafc;
+        border-top: 1px solid #dbe4ef;
+    }
+
+    .sidebar > div {
+        border-radius: 12px;
+        padding: 12px;
+    }
+
+    .search-section {
+        padding-top: 8px;
+    }
+
+    .main-header {
+        padding: 16px 14px;
+    }
+
+    .header-title {
+        font-size: 20px;
+    }
+
+    .header-subtitle {
+        font-size: 12px;
+    }
+}
+
+/* Restyle the zoom/compass control to match the app's blue theme */
+.maplibregl-ctrl-top-right .maplibregl-ctrl-group {
+    background: #ffffff;
+    border: 1px solid rgba(44, 90, 160, 0.15);
+    border-radius: 12px;
+    box-shadow: 0 4px 16px rgba(44, 90, 160, 0.18);
+    overflow: hidden;
+}
+
+.maplibregl-ctrl-top-right .maplibregl-ctrl-group button {
+    width: 36px;
+    height: 36px;
+    background-color: transparent;
+    transition: background-color 0.15s ease;
+}
+
+.maplibregl-ctrl-top-right .maplibregl-ctrl-group button:hover {
+    background-color: #eaf2fb;
+}
+
+.maplibregl-ctrl-top-right .maplibregl-ctrl-group button:active {
+    background-color: #d8e8f7;
+}
+
+/* Divider between stacked buttons, tinted blue instead of MapLibre's default gray */
+.maplibregl-ctrl-top-right .maplibregl-ctrl-group button + button {
+    border-top: 1px solid rgba(44, 90, 160, 0.15);
+}
+
+/* Give the compass a faint permanent tint so it reads as a distinct "rotation" control */
+.maplibregl-ctrl-top-right .maplibregl-ctrl-compass {
+    background-color: #f4f8fd;
+}
+
+/* Authentication */
+.auth-screen {
+    min-height: 100dvh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    background:
+        radial-gradient(900px 600px at 0% -10%, #d8ecff 0%, transparent 58%),
+        radial-gradient(700px 500px at 100% 0%, #ffe7c2 0%, transparent 50%),
+        linear-gradient(180deg, #f7f2e9 0%, #e1ecf6 100%);
+}
+
+.auth-card {
+    width: min(100%, 460px);
+    background: #fff;
+    border: 1px solid #e7ebf2;
+    border-radius: 18px;
+    padding: 24px;
+    box-shadow: var(--shadow-xl);
+}
+
+.auth-brand {
+    text-align: center;
+    margin-bottom: 18px;
+}
+
+.auth-brand-icon {
+    width: 80px;
+    height: 80px;
+    margin: 0 auto 10px;
+    display: grid;
+    place-items: center;
+}
+
+.auth-brand-logo {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    display: block;
+}
+
+.auth-brand h1 {
+    font-size: 22px;
+    margin-bottom: 6px;
+    color: #123c56;
+}
+
+.auth-brand p {
+    font-size: 13px;
+    color: #56657a;
+}
+
+.auth-tabs {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+    margin-bottom: 16px;
+}
+
+.auth-tab-btn {
+    border: 1px solid #dbe5f0;
+    background: #f8fbff;
+    color: #304055;
+    border-radius: 10px;
+    min-height: 40px;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.auth-tab-btn.active {
+    background: var(--primary-blue);
+    color: #fff;
+    border-color: var(--primary-blue);
+}
+
+.auth-form {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.auth-label {
+    font-size: 12px;
+    font-weight: 600;
+    color: #3e4f63;
+}
+
+.auth-input {
+    min-height: 44px;
+    border: 1px solid #dbe5f0;
+    border-radius: 10px;
+    padding: 0 12px;
+    font-size: 14px;
+}
+
+.auth-input:focus-visible,
+.auth-tab-btn:focus-visible {
+    outline: 3px solid rgba(44, 90, 160, 0.2);
+    outline-offset: 2px;
+}
+
+.auth-select {
+    background: #fff;
+}
+
+.auth-submit-btn {
+    margin-top: 8px;
+}
+
+.auth-helper-text {
+    font-size: 12px;
+    color: #526277;
+}
+
+/* Hide every native browser password reveal/clear/autofill icon
+   (Edge/IE, Chrome/Android, Samsung Internet, etc.) so our single
+   custom eye-toggle button is the only one shown, consistently
+   across desktop and mobile */
+input[type="password"]::-ms-reveal,
+input[type="password"]::-ms-clear {
+    display: none;
+}
+
+input[type="password"]::-webkit-credentials-auto-fill-button,
+input[type="password"]::-webkit-strong-password-auto-fill-button,
+input[type="password"]::-webkit-textfield-decoration-container {
+    display: none !important;
+    visibility: hidden;
+    pointer-events: none;
+    position: absolute;
+    right: 0;
+}
+
+input[type="password"] {
+    -webkit-appearance: none;
+    appearance: none;
+}
+
+.auth-password-rules {
+    margin: 2px 0 0;
+    padding-left: 18px;
+}
+
+.password-rules li {
+    font-size: 12px;
+    margin-bottom: 3px;
+    color: #6c7a8e;
+}
+
+.password-rules li.rule-ok {
+    color: #1f8a4c;
+}
+
+.password-rules li.rule-fail {
+    color: #c0392b;
+}
+
+.password-rules li.rule-neutral {
+    color: #6c7a8e;
+}
+
+.password-match-msg {
+    font-size: 12px;
+    min-height: 18px;
+}
+
+.password-match-msg.match-ok {
+    color: #1f8a4c;
+}
+
+.password-match-msg.match-fail {
+    color: #c0392b;
+}
+
+.forgot-progress {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 6px;
+    margin-bottom: 8px;
+}
+
+.forgot-progress-step {
+    font-size: 10px;
+    text-align: center;
+    padding: 6px 4px;
+    border-radius: 10px;
+    border: 1px solid #dbe5f0;
+    background: #f8fbff;
+    color: #506176;
+    font-weight: 600;
+}
+
+.forgot-progress-step .step-dot {
+    display: inline-grid;
+    place-items: center;
+    width: 16px;
+    height: 16px;
+    border-radius: 999px;
+    background: #dfe8f3;
+    margin-right: 4px;
+    font-size: 10px;
+}
+
+.forgot-progress-step.is-active {
+    border-color: var(--primary-blue);
+    background: #eaf4ff;
+    color: var(--primary-blue);
+}
+
+.forgot-progress-step.is-active .step-dot {
+    background: var(--primary-blue);
+    color: #fff;
+}
+
+.forgot-progress-step.is-done .step-dot {
+    background: #1f8a4c;
+    color: #fff;
+}
+
+.forgot-method-row {
+    display: grid;
+    /* auto-fit collapses any empty/unused track to 0 width, so with only
+       one active method (Email — SMS is commented out above) this option
+       stretches to the row's full width instead of being stuck in a
+       half-width column left over from a 2-column layout. If SMS is
+       re-enabled later, this automatically goes back to a 2-column row. */
+    grid-template-columns: repeat(auto-fit, minmax(0, 1fr));
+    gap: 8px;
+    margin-bottom: 4px;
+}
+
+.forgot-method-option {
+    border: 1px solid #dbe5f0;
+    border-radius: 10px;
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 8px;
+    padding: 0 12px;
+    font-size: 14px;
+    font-weight: 600;
+    color: #425267;
+    background: #f8fbff;
+}
+
+.header-user-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px 6px 6px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.18);
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    color: white;
+    cursor: pointer;
+    transition: background 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.header-user-chip:hover {
+    background: rgba(255, 255, 255, 0.32);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.18);
+}
+
+.header-user-chip:active {
+    transform: translateY(0);
+}
+
+.chip-avatar {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: #f0a500;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    flex-shrink: 0;
+}
+
+.chip-chevron {
+    opacity: 0.55;
+    font-size: 18px;
+    margin-left: 1px;
+    position: relative;
+    top: -1.5px;   /* ⬅ negative = moves it up, positive = moves it down */
+    transition: transform 0.2s ease, opacity 0.2s ease;
+}
+
+.header-user-chip:hover .chip-chevron {
+    transform: rotate(90deg);
+    opacity: 1;
+}
+/* ── 3D MAP CONTAINER ── */
+.map-section {
+    position: relative;
+}
+#map3d,
+.map-3d-container {
+    border-radius: inherit;
+}
+#map3d canvas,
+.map-3d-container canvas {
+    border-radius: inherit;
+    touch-action: none;
+}
+.maplibregl-popup-content {
+    border-radius: 10px !important;
+    /* Same approach as .building-popup-with-image: reserve clearance
+       ABOVE the title for the close button (top:10px, 32px tall) instead
+       of a permanent right-side gutter. These popups (room popup, 3D
+       popup, "Your Location" popup) are single-column/centered, so
+       pushing content down below the button uses the full width and
+       looks consistent with the building popup on mobile. */
+    padding: 44px 14px 14px 14px !important;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.15) !important;
+    font-family: 'Sora', 'Segoe UI', sans-serif;
+}
+.maplibregl-ctrl-top-right {
+    top: 140px !important;
+}
+@media (max-width: 480px) {
+    .auth-card {
+        padding: 18px;
+        border-radius: 14px;
+    }
+
+    .auth-brand h1 {
+        font-size: 19px;
+    }
+
+    .auth-tabs {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+/* ── PROFILE PANEL ── */
+.profile-info-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 11px 16px;
+    border-bottom: 1px solid #f0f4f8;
+    gap: 12px;
+}
+.profile-info-label {
+    font-size: 12px;
+    color: #6b7f8e;
+    font-weight: 600;
+    flex-shrink: 0;
+}
+.profile-info-val {
+    font-size: 13px;
+    color: #1a2b3c;
+    font-weight: 500;
+    text-align: right;
+    word-break: break-all;
+}
+.profile-field {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    margin-bottom: 14px;
+}
+.profile-label {
+    font-size: 11px;
+    font-weight: 700;
+    color: #6b7f8e;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+}
+.profile-input {
+    padding: 10px 12px;
+                    border: 1.5px solid #d6e4ed;
+                      border-radius: 9px;
+    font-size: 14px;
+    outline: none;
+    transition: border 0.2s;
+    font-family: inherit;
+    background: #f7fafc;
+}
+.profile-input:focus {
+    border-color: #1e5b7a;
+    background: white;
+}
+#profilePanel.open {
+    transform: translateX(0) !important;
+}
+#prLen.ok, #prUpper.ok, #prLower.ok, #prDigit.ok, #prSpecial.ok {
+    color: #34a853;
+}
+#prLen.fail, #prUpper.fail, #prLower.fail, #prDigit.fail, #prSpecial.fail {
+    color: #ea4335;
+}
+
+/* ============================================================
+   RESPONSIVE + SMOOTHNESS POLISH
+   ============================================================ */
+html {
+    scroll-behavior: smooth;
+}
+
+body {
+    -webkit-tap-highlight-color: transparent;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+}
+
+/* Consistent easing across interactive elements */
+.btn-primary,
+.btn-secondary,
+.btn-text,
+button,
+.nav-item,
+.stat-card,
+.alert-banner {
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.btn-primary:active,
+.btn-secondary:active {
+    transform: scale(0.97);
+}
+
+/* Comfortable tap targets on touch devices — desktop untouched */
+@media (max-width: 768px) {
+    .btn-primary,
+    .btn-secondary,
+    #ai-chat-toggle,
+    #ai-chat-send {
+        min-height: 44px;
+    }
+}
+
+/* Small phones: keep modal content from feeling cramped */
+@media (max-width: 480px) {
+    .modal-content {
+        padding: clamp(18px, 6vw, 28px);
+        border-radius: 14px;
+    }
+    .modal-content h1 {
+        font-size: clamp(20px, 6vw, 24px);
+    }
+}
+
+/* ── Visitor check-in section on auth screen ── */
+.visitor-checkin-section {
+    margin-top: 20px;
+    text-align: center;
+}
+
+.visitor-divider {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 14px;
+    color: #94a3b8;
+    font-size: 12px;
+}
+
+.visitor-divider::before,
+.visitor-divider::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: #e2e8f0;
+}
+
+.btn-visitor-guest {
+    width: 100%;
+    padding: 11px 16px;
+    border: 1.5px solid #2c5aa0;
+    border-radius: 10px;
+    background: transparent;
+    color: #2c5aa0;
+    font-size: 14px;
+    font-weight: 600;
+    font-family: inherit;
+    cursor: pointer;
+    transition: background 0.18s, color 0.18s;
+}
+
+.btn-visitor-guest:hover {
+    background: #2c5aa0;
+    color: #fff;
+}
+
+.visitor-checkin-hint {
+    margin: 8px 0 0;
+    font-size: 11px;
+    color: #94a3b8;
+    line-height: 1.4;
+}
+
+/* ── Forgot Password link + reset screen header ── */
+.auth-forgot-row {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 2px;
+}
+
+.auth-link-btn {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    background: none;
+    border: none;
+    padding: 2px 0;
+    font-family: inherit;
+    font-size: 12.5px;
+    font-weight: 600;
+    color: var(--primary-blue);
+    cursor: pointer;
+    transition: color 0.2s ease;
+}
+
+.auth-link-btn::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    bottom: -1px;
+    width: 100%;
+    height: 1.5px;
+    background: currentColor;
+    transform: scaleX(0);
+    transform-origin: right;
+    transition: transform 0.25s ease;
+}
+
+.auth-link-btn:hover,
+.auth-link-btn:focus-visible {
+    color: var(--dark-blue);
+}
+
+.auth-link-btn:hover::after,
+.auth-link-btn:focus-visible::after {
+    transform: scaleX(1);
+    transform-origin: left;
+}
+
+.auth-link-btn:focus-visible {
+    outline: 3px solid rgba(44, 90, 160, 0.2);
+    outline-offset: 3px;
+    border-radius: 4px;
+}
+
+.auth-link-icon {
+    font-size: 13px;
+    display: inline-block;
+    transition: transform 0.25s ease;
+}
+
+.auth-forgot-link:hover .auth-link-icon {
+    transform: rotate(-20deg);
+}
+
+.auth-back-link:hover .auth-link-icon {
+    transform: translateX(-3px);
+}
+
+.auth-forgot-header {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+    margin-bottom: 6px;
+}
+
+.auth-forgot-title {
+    margin-top: 6px;
+    font-size: 17px;
+    font-weight: 700;
+    color: #123c56;
+}
+
+.auth-forgot-sub {
+    font-size: 12.5px;
+    color: #56657a;
+    line-height: 1.45;
+}
+
+/* =========================================================
+   LOGIN SCREEN REDESIGN (2026)
+   Keep this block LAST in style.css — it overrides the older
+   .auth-* rules above without needing to delete them.
+   ========================================================= */
+.auth-screen {
+    --auth-navy: #0f2f4a;
+    --auth-blue: #1e5b7a;
+    --auth-teal: #1f8a9e;
+    --auth-teal-dark: #146b7a;   /* darker teal for small text — passes contrast */
+    --auth-gold: #f0a500;
+    --auth-text: #1e293b;
+    --auth-muted: #5b6b7e;
+    --auth-border: #dbe3ec;
+    --auth-field-bg: #f7f9fc;
+    --auth-radius: 12px;
+
+    position: relative;
+    overflow: hidden;
+    isolation: isolate;
+    padding: 24px 16px;
+    background:
+        radial-gradient(600px 420px at 0% 0%, rgba(31, 138, 158, 0.14), transparent 60%),
+        radial-gradient(520px 380px at 100% 100%, rgba(240, 165, 0, 0.10), transparent 60%),
+        linear-gradient(180deg, #f4f7fb 0%, #e7eef5 100%);
+}
+
+/* Faint map grid, fading out toward the edges */
+.auth-screen::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    background-image:
+        linear-gradient(rgba(15, 58, 82, 0.05) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(15, 58, 82, 0.05) 1px, transparent 1px);
+    background-size: 32px 32px;
+    -webkit-mask-image: radial-gradient(ellipse at center, #000 25%, transparent 75%);
+    mask-image: radial-gradient(ellipse at center, #000 25%, transparent 75%);
+}
+
+/* Subtle dotted "route" line behind the card */
+.auth-screen::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    opacity: 0.7;
+    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 800' preserveAspectRatio='xMidYMid slice'%3E%3Cpath d='M-20 700 C 80 630, 50 530, 150 480 S 310 390, 260 270 S 330 100, 430 60' fill='none' stroke='%231f8a9e' stroke-opacity='.25' stroke-width='3' stroke-dasharray='1 11' stroke-linecap='round'/%3E%3Ccircle cx='260' cy='270' r='5' fill='%23f0a500' fill-opacity='.45'/%3E%3C/svg%3E") center / cover no-repeat;
+}
+
+/* ── Card ── */
+.auth-screen .auth-card {
+    position: relative;
+    z-index: 1;
+    width: min(100%, 400px);
+    padding: 28px 24px 24px;
+    border-radius: 24px;
+    background: rgba(255, 255, 255, 0.94);
+    border: 1px solid rgba(15, 47, 74, 0.06);
+    box-shadow:
+        0 1px 2px rgba(15, 47, 74, 0.04),
+        0 24px 48px -16px rgba(15, 47, 74, 0.22);
+    -webkit-backdrop-filter: blur(12px);
+    backdrop-filter: blur(12px);
+    animation: authCardIn 0.45s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+@keyframes authCardIn {
+    from { opacity: 0; transform: translateY(12px); }
+    to   { opacity: 1; transform: none; }
+}
+
+/* ── Logo, title, subtitle ── */
+.auth-screen .auth-brand {
+    margin-bottom: 20px;
+}
+
+.auth-screen .auth-brand-icon {
+    width: 72px;
+    height: 72px;
+    margin: 0 auto 12px;
+}
+
+.auth-screen .auth-brand-logo {
+    filter: drop-shadow(0 4px 10px rgba(15, 47, 74, 0.18));
+}
+
+.auth-screen .auth-brand h1 {
+    margin: 0;
+    font-size: 21px;
+    font-weight: 800;
+    line-height: 1.25;
+    letter-spacing: -0.01em;
+    color: var(--auth-navy);
+}
+
+/* small gold accent between title and subtitle */
+.auth-screen .auth-brand h1::after {
+    content: "";
+    display: block;
+    width: 32px;
+    height: 3px;
+    margin: 10px auto;
+    border-radius: 3px;
+    background: var(--auth-gold);
+}
+
+.auth-screen .auth-brand p {
+    max-width: 290px;
+    margin: 0 auto;
+    font-size: 13px;
+    line-height: 1.5;
+    color: var(--auth-muted);
+}
+
+/* ── Login / Register segmented tabs ── */
+.auth-screen .auth-tabs {
+    gap: 4px;
+    padding: 4px;
+    margin-bottom: 20px;
+    background: #eef2f7;
+    border-radius: 14px;
+}
+
+.auth-screen .auth-tab-btn {
+    min-height: 40px;
+    border: none;
+    border-radius: 10px;
+    background: transparent;
+    color: var(--auth-muted);
+    font-size: 13.5px;
+    font-weight: 700;
+    transition: background-color 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.auth-screen .auth-tab-btn:hover:not(.active) {
+    color: var(--auth-navy);
+    background: rgba(255, 255, 255, 0.6);
+}
+
+.auth-screen .auth-tab-btn.active {
+    background: #ffffff;
+    color: var(--auth-navy);
+    box-shadow:
+        0 1px 2px rgba(15, 47, 74, 0.08),
+        0 4px 12px rgba(15, 47, 74, 0.10);
+}
+
+.auth-screen .auth-tab-btn:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(31, 138, 158, 0.3);
+}
+
+/* ── Labels ── */
+.auth-screen .auth-label {
+    font-size: 12.5px;
+    font-weight: 600;
+    letter-spacing: 0.01em;
+    color: #334155;
+}
+
+/* Tighter label→field spacing, roomier field→next label (login form only) */
+.auth-screen #loginForm {
+    gap: 0;
+}
+
+.auth-screen #loginForm .auth-label {
+    margin-bottom: 6px;
+}
+
+.auth-screen #loginForm > .auth-input,
+.auth-screen #loginForm > .auth-input-wrap {
+    margin-bottom: 14px;
+}
+
+/* ── Inputs (all auth forms) ── */
+.auth-screen .auth-input {
+    width: 100%;
+    height: 48px;
+    min-height: 48px;
+    padding: 0 14px;
+    border: 1.5px solid var(--auth-border);
+    border-radius: var(--auth-radius);
+    background-color: var(--auth-field-bg);
+    color: var(--auth-text);
+    font-family: inherit;
+    font-size: 14.5px;
+    box-shadow: 0 1px 2px rgba(15, 47, 74, 0.04);
+    transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+}
+
+.auth-screen .auth-input::placeholder {
+    color: #94a3b8;
+}
+
+.auth-screen .auth-input:hover {
+    border-color: #c5d1de;
+}
+
+.auth-screen .auth-input:focus,
+.auth-screen .auth-input:focus-visible {
+    outline: none;
+    border-color: var(--auth-teal);
+    background-color: #ffffff;
+    box-shadow: 0 0 0 4px rgba(31, 138, 158, 0.15);
+}
+
+.auth-screen .auth-input:-webkit-autofill {
+    -webkit-box-shadow: 0 0 0 40px #ffffff inset;
+    -webkit-text-fill-color: var(--auth-text);
+}
+
+/* file upload on the Register form */
+.auth-screen input[type="file"].auth-input {
+    height: auto;
+    padding: 10px 12px;
+}
+
+/* custom dropdown chevron */
+.auth-screen .auth-select {
+    -webkit-appearance: none;
+    appearance: none;
+    cursor: pointer;
+    padding-right: 42px;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%235b6b7e' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 14px center;
+    background-size: 16px;
+}
+
+/* ── Icons inside fields ── */
+.auth-screen .auth-input-wrap {
+    position: relative;
+}
+
+.auth-screen .auth-input-wrap .auth-input {
+    padding-left: 44px;
+}
+
+.auth-screen .auth-input-wrap--password .auth-input {
+    padding-right: 50px;
+}
+
+.auth-screen .auth-input-icon {
+    position: absolute;
+    left: 14px;
+    top: 50%;
+    width: 18px;
+    height: 18px;
+    transform: translateY(-50%);
+    color: #8a99ab;
+    pointer-events: none;
+    transition: color 0.2s ease;
+}
+
+.auth-screen .auth-input-wrap:focus-within .auth-input-icon {
+    color: var(--auth-teal);
+}
+
+/* show/hide password button */
+.auth-screen .auth-eye-btn {
+    position: absolute;
+    right: 6px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 38px;
+    height: 38px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    border: none;
+    border-radius: 10px;
+    background: transparent;
+    color: #6b7c8f;
+    cursor: pointer;
+    transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.auth-screen .auth-eye-btn:hover {
+    background: rgba(15, 47, 74, 0.06);
+    color: var(--auth-navy);
+}
+
+.auth-screen .auth-eye-btn:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(31, 138, 158, 0.3);
+}
+
+/* ── Forgot Password link ── */
+.auth-screen #loginForm .auth-forgot-row {
+    margin: -4px 0 18px;
+}
+
+.auth-screen .auth-link-btn {
+    gap: 6px;
+    font-size: 12.5px;
+    font-weight: 600;
+    color: var(--auth-teal-dark);
+}
+
+.auth-screen .auth-link-btn:hover,
+.auth-screen .auth-link-btn:focus-visible {
+    color: var(--auth-navy);
+}
+
+.auth-screen .auth-link-icon {
+    width: 14px;
+    height: 14px;
+    flex-shrink: 0;
+}
+
+.auth-screen .auth-forgot-link:hover .auth-link-icon {
+    transform: rotate(-45deg);
+}
+
+/* ── Main submit buttons (Login, Create Account, reset steps) ── */
+.auth-screen .auth-submit-btn {
+    width: 100%;
+    height: 50px;
+    margin-top: 4px;
+    border: none;
+    border-radius: var(--auth-radius);
+    background: linear-gradient(135deg, var(--auth-navy) 0%, var(--auth-blue) 55%, var(--auth-teal) 100%);
+    background-size: 160% 100%;
+    background-position: 0% 50%;
+    color: #ffffff;
+    font-size: 15px;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    box-shadow: 0 8px 20px -6px rgba(15, 58, 82, 0.45);
+    transition: transform 0.18s ease, box-shadow 0.2s ease, background-position 0.35s ease;
+}
+
+.auth-screen .auth-submit-btn:hover {
+    background-position: 100% 50%;
+    transform: translateY(-1px);
+    box-shadow: 0 12px 24px -8px rgba(15, 58, 82, 0.5);
+}
+
+.auth-screen .auth-submit-btn:active {
+    transform: translateY(0) scale(0.985);
+    box-shadow: 0 4px 12px -4px rgba(15, 58, 82, 0.4);
+}
+
+.auth-screen .auth-submit-btn:focus-visible {
+    outline: none;
+    box-shadow:
+        0 0 0 4px rgba(31, 138, 158, 0.3),
+        0 8px 20px -6px rgba(15, 58, 82, 0.45);
+}
+
+/* ── Phones (360–430px) ── */
+@media (max-width: 480px) {
+    .auth-screen {
+        padding: 20px 14px;
+    }
+
+    .auth-screen .auth-card {
+        padding: 24px 18px 20px;
+        border-radius: 20px;
+    }
+
+    .auth-screen .auth-brand {
+        margin-bottom: 18px;
+    }
+
+    .auth-screen .auth-brand-icon {
+        width: 64px;
+        height: 64px;
+        margin-bottom: 10px;
+    }
+
+    .auth-screen .auth-brand h1 {
+        font-size: 19px;
+    }
+
+    .auth-screen .auth-brand h1::after {
+        margin: 8px auto;
+    }
+}
+
+/* Short screens: start at the top instead of centering, so nothing is cut off */
+@media (max-height: 720px) {
+    .auth-screen {
+        align-items: flex-start;
+    }
+}
+
+/* Respect users who turn off animations */
+@media (prefers-reduced-motion: reduce) {
+    .auth-screen .auth-card {
+        animation: none;
+    }
+
+    .auth-screen *,
+    .auth-screen *::before,
+    .auth-screen *::after {
+        transition: none !important;
+    }
+}
+
+/* =========================================================
+   LOGIN BACKGROUND REDESIGN
+   Keep this block LAST in style.css.
+   ========================================================= */
+
+/* Base: soft cool gradient */
+.auth-screen {
+    background: linear-gradient(160deg, #f5f8fc 0%, #eaf1f7 55%, #e3ecf4 100%);
+}
+
+/* Campus-map grid: fine lines + stronger "block" lines, faded at the edges */
+.auth-screen::before {
+    background-image:
+        linear-gradient(rgba(15, 58, 82, 0.06) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(15, 58, 82, 0.06) 1px, transparent 1px),
+        linear-gradient(rgba(15, 58, 82, 0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(15, 58, 82, 0.03) 1px, transparent 1px);
+    background-size: 120px 120px, 120px 120px, 24px 24px, 24px 24px;
+    background-position: center;
+    -webkit-mask-image: radial-gradient(ellipse 80% 75% at 50% 50%, #000 35%, transparent 100%);
+    mask-image: radial-gradient(ellipse 80% 75% at 50% 50%, #000 35%, transparent 100%);
+}
+
+/* Soft light pool behind the card so the form always stands out */
+.auth-screen::after {
+    opacity: 1;
+    background: radial-gradient(ellipse 520px 560px at 50% 50%, rgba(255, 255, 255, 0.85), rgba(255, 255, 255, 0) 70%);
+}
+
+/* Decorative layer container */
+.auth-screen .auth-bg {
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    overflow: hidden;
+}
+
+/* Drifting color glows */
+.auth-screen .auth-bg::before,
+.auth-screen .auth-bg::after {
+    content: "";
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(70px);
+    animation: authBlobFloat 18s ease-in-out infinite alternate;
+}
+
+.auth-screen .auth-bg::before {
+    width: 460px;
+    height: 460px;
+    top: -140px;
+    left: -120px;
+    background: rgba(31, 138, 158, 0.22);
+}
+
+.auth-screen .auth-bg::after {
+    width: 420px;
+    height: 420px;
+    bottom: -150px;
+    right: -110px;
+    background: rgba(240, 165, 0, 0.16);
+    animation-delay: -9s;
+}
+
+@keyframes authBlobFloat {
+    from { transform: translate(0, 0) scale(1); }
+    to   { transform: translate(40px, 30px) scale(1.08); }
+}
+
+/* Corner illustrations: always anchored to the screen corners */
+.auth-screen .auth-bg-corner {
+    position: absolute;
+    width: clamp(240px, 36vw, 560px);
+    height: auto;
+    opacity: 0.9;
+}
+
+.auth-screen .auth-bg-corner--tl {
+    top: 0;
+    left: 0;
+}
+
+.auth-screen .auth-bg-corner--br {
+    right: 0;
+    bottom: 0;
+}
+
+/* Dotted routes slowly "flow" toward the destination */
+.auth-screen .auth-bg-route {
+    animation: authRouteFlow 2.4s linear infinite;
+}
+
+@keyframes authRouteFlow {
+    to { stroke-dashoffset: -24; }
+}
+
+/* Start point pulse */
+.auth-screen .auth-bg-pulse {
+    transform-box: fill-box;
+    transform-origin: center;
+    animation: authPulse 2.6s ease-out infinite;
+}
+
+@keyframes authPulse {
+    0%   { transform: scale(0.8); opacity: 0.9; }
+    100% { transform: scale(2); opacity: 0; }
+}
+
+/* Destination pin gently bobs */
+.auth-screen .auth-bg-dest {
+    animation: authPinBob 3s ease-in-out infinite;
+}
+
+@keyframes authPinBob {
+    0%, 100% { transform: translateY(0); }
+    50%      { transform: translateY(-5px); }
+}
+
+/* Frosted-glass card so the background shows through very faintly */
+.auth-screen .auth-card {
+    background: rgba(255, 255, 255, 0.9);
+    -webkit-backdrop-filter: blur(16px) saturate(140%);
+    backdrop-filter: blur(16px) saturate(140%);
+    box-shadow:
+        0 1px 2px rgba(15, 47, 74, 0.05),
+        0 30px 60px -20px rgba(15, 47, 74, 0.28),
+        inset 0 0 0 1px rgba(255, 255, 255, 0.6);
+}
+
+/* Large screens: slightly bigger corners for balance */
+@media (min-width: 1400px) {
+    .auth-screen .auth-bg-corner {
+        width: clamp(480px, 34vw, 640px);
+    }
+}
+
+/* Phones: calmer background, more solid card for readability */
+@media (max-width: 480px) {
+    .auth-screen .auth-bg-corner {
+        opacity: 0.75;
+    }
+
+    .auth-screen .auth-bg::before {
+        width: 320px;
+        height: 320px;
+        top: -110px;
+        left: -110px;
+    }
+
+    .auth-screen .auth-bg::after {
+        width: 300px;
+        height: 300px;
+        bottom: -120px;
+        right: -100px;
+    }
+
+    .auth-screen::after {
+        background: radial-gradient(ellipse 90% 60% at 50% 50%, rgba(255, 255, 255, 0.8), rgba(255, 255, 255, 0) 75%);
+    }
+
+    .auth-screen .auth-card {
+        background: rgba(255, 255, 255, 0.95);
+    }
+}
+
+/* No motion for users who turn animations off */
+@media (prefers-reduced-motion: reduce) {
+    .auth-screen .auth-bg::before,
+    .auth-screen .auth-bg::after,
+    .auth-screen .auth-bg-route,
+    .auth-screen .auth-bg-pulse,
+    .auth-screen .auth-bg-dest {
+        animation: none;
+    }
+}

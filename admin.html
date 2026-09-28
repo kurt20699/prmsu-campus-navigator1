@@ -1,0 +1,4142 @@
+<!DOCTYPE html>
+  <html lang="en">
+  <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PRMSU Admin Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://unpkg.com/maplibre-gl@4.1.2/dist/maplibre-gl.css" rel="stylesheet">
+  <script src="static-footprints.js"></script>
+  <script src="https://unpkg.com/maplibre-gl@4.1.2/dist/maplibre-gl.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Sora:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+  *,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+
+  /* ── PROFILE PANEL ── */
+  .profile-overlay{
+    display:none;position:fixed;inset:0;
+    background:rgba(15,23,42,0.35);z-index:300;
+  }
+  .profile-overlay.active{display:block;}
+  .profile-panel{
+    position:fixed;top:0;right:-380px;width:360px;height:100vh;
+    background:white;z-index:400;
+    box-shadow:-8px 0 32px rgba(15,58,82,0.18);
+    transition:right 0.35s cubic-bezier(0.4,0,0.2,1);
+    display:flex;flex-direction:column;overflow-y:auto;
+  }
+  .profile-panel.active{right:0;}
+  .profile-panel-header{
+    background:linear-gradient(135deg,#0f2a3d,#1e5b7a);
+    padding:32px 24px 28px;text-align:center;position:relative;
+  }
+  .profile-close{
+    position:absolute;top:14px;right:14px;
+    width:32px;height:32px;border-radius:50%;
+    background:rgba(255,255,255,0.15);border:none;
+    color:white;font-size:16px;cursor:pointer;
+    display:flex;align-items:center;justify-content:center;
+    transition:background 0.2s;
+  }
+  .profile-close:hover{background:rgba(255,255,255,0.25);}
+  .profile-avatar-lg{
+    width:90px;height:90px;border-radius:50%;
+    background:var(--accent);
+    display:flex;align-items:center;justify-content:center;
+    font-size:32px;font-weight:800;color:white;
+    margin:0 auto 12px;
+    border:3px solid rgba(255,255,255,0.3);
+    overflow:hidden;
+  }
+  .profile-avatar-lg img{width:100%;height:100%;object-fit:cover;}
+  .profile-panel-name{font-size:18px;font-weight:800;color:white;margin-bottom:4px;}
+  .profile-panel-role{
+    display:inline-block;padding:3px 12px;border-radius:999px;
+    background:rgba(255,255,255,0.15);
+    font-size:11px;font-weight:700;color:rgba(255,255,255,0.9);
+    text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px;
+  }
+  .profile-panel-id{font-size:12px;color:rgba(255,255,255,0.55);}
+  .profile-section-title{
+    font-size:10px;font-weight:700;text-transform:uppercase;
+    letter-spacing:1px;color:var(--blue);
+    padding:20px 24px 10px;
+  }
+  .profile-detail-card{
+    margin:0 16px;border-radius:12px;
+    border:1px solid var(--border);overflow:hidden;
+  }
+  .profile-detail-row{
+    display:flex;justify-content:space-between;align-items:center;
+    padding:13px 16px;border-bottom:1px solid #f1f5f9;font-size:13px;
+  }
+  .profile-detail-row:last-child{border-bottom:none;}
+  .profile-detail-label{color:var(--muted);font-weight:500;}
+  .profile-detail-value{color:var(--text);font-weight:600;text-align:right;max-width:60%;}
+  .profile-activity-card{
+    margin:0 16px;border-radius:12px;
+    border:1px solid var(--border);overflow:hidden;
+  }
+  .profile-signout{
+    margin:20px 16px 24px;
+    padding:13px;border-radius:10px;
+    background:#fff0f0;border:1.5px solid #fca5a5;
+    color:#dc2626;font-size:14px;font-weight:700;
+    cursor:pointer;width:calc(100% - 32px);
+    font-family:inherit;transition:background 0.2s;
+    display:flex;align-items:center;justify-content:center;gap:8px;
+  }
+  .profile-signout:hover{background:#fee2e2;}
+
+  .profile-avatar-wrap{
+    position:relative;display:inline-block;margin:0 auto 12px;
+  }
+  .profile-avatar-edit{
+    position:absolute;bottom:2px;right:2px;
+    width:28px;height:28px;border-radius:50%;
+    background:var(--accent);border:2px solid white;
+    display:flex;align-items:center;justify-content:center;
+    font-size:13px;cursor:pointer;
+    transition:transform 0.2s;
+  }
+  .profile-avatar-edit:hover{transform:scale(1.1);}
+  #profilePhotoInput{display:none;}
+
+  :root{
+    --sidebar-bg:    #0f2a3d;
+    --sidebar-hover: #1a3a52;
+    --sidebar-active:#1e5b7a;
+    --sidebar-text:  rgba(255,255,255,0.65);
+    --sidebar-w:     240px;
+    --blue:          #1e5b7a;
+    --dark-blue:     #0f3a52;
+    --light-blue:    #3b7ea2;
+    --accent:        #f0a500;
+    --green:         #34a853;
+    --red:           #ea4335;
+    --purple:        #6c63ff;
+    --bg:            #f0f4f8;
+    --surface:       #ffffff;
+    --border:        #e2e8f0;
+    --text:          #1a2b3c;
+    --muted:         #64748b;
+    --shadow:        0 2px 12px rgba(15,58,82,0.10);
+    --shadow-lg:     0 8px 32px rgba(15,58,82,0.14);
+  }
+
+  #roomMapPicker {
+    width: 100%;
+    height: 280px;
+    border-radius: 10px;
+    border: 1.5px solid var(--border);
+    margin-top: 6px;
+    display: none;
+  }
+  .coords-display {
+    font-size: 11px;
+    color: var(--muted);
+    padding: 5px 0;
+  }
+
+  html{overflow-x:hidden;}
+  body{font-family:"Sora","Segoe UI",sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;overflow-x:hidden;}
+
+  /* ── SIDEBAR ── */
+  .sidebar{
+    width:var(--sidebar-w);
+    background:var(--sidebar-bg);
+    min-height:100vh;
+    display:flex;
+    flex-direction:column;
+    position:fixed;
+    top:0;left:0;bottom:0;
+    z-index:200;
+    overflow-y:auto;
+    transition:transform 0.3s ease;
+  }
+
+  .sidebar-brand{
+    padding:22px 18px 18px;
+    display:flex;
+    align-items:center;
+    gap:10px;
+    border-bottom:1px solid rgba(255,255,255,0.07);
+  }
+
+  .sidebar-brand-icon{
+    width:36px;height:36px;
+    border-radius:10px;
+    background:linear-gradient(135deg,var(--blue),var(--light-blue));
+    display:flex;align-items:center;justify-content:center;
+    font-size:18px;flex-shrink:0;
+  }
+
+  .sidebar-brand-text .name{
+    font-family:"DM Serif Display",serif;
+    color:white;font-size:14px;font-weight:400;letter-spacing:0.2px;
+  }
+  .sidebar-brand-text .sub{
+    font-size:10px;color:rgba(255,255,255,0.4);margin-top:1px;
+  }
+
+  .sidebar-section-label{
+    font-size:9px;font-weight:700;letter-spacing:1.2px;
+    text-transform:uppercase;color:rgba(255,255,255,0.3);
+    padding:18px 18px 6px;
+  }
+
+  .nav-item{
+    display:flex;align-items:center;gap:10px;
+    padding:10px 18px;margin:1px 8px;
+    border-radius:9px;
+    color:var(--sidebar-text);
+    font-size:13px;font-weight:500;
+    cursor:pointer;
+    transition:background 0.18s,color 0.18s;
+    text-decoration:none;
+    user-select:none;
+  }
+  .nav-item:hover{background:var(--sidebar-hover);color:rgba(255,255,255,0.9);}
+  .nav-item.active{background:var(--sidebar-active);color:white;font-weight:600;}
+  .nav-item .nav-icon{font-size:16px;width:22px;text-align:center;flex-shrink:0;}
+
+  .sidebar-footer{
+    margin-top:auto;
+    padding:14px 12px;
+    border-top:1px solid rgba(255,255,255,0.07);
+  }
+  .admin-chip{
+    display:flex;align-items:center;gap:10px;
+    padding:10px 12px;border-radius:10px;
+    background:rgba(255,255,255,0.06);
+  }
+  .admin-avatar{
+    width:34px;height:34px;border-radius:50%;
+    background:var(--accent);
+    display:flex;align-items:center;justify-content:center;
+    font-size:14px;font-weight:700;color:white;flex-shrink:0;
+  }
+  .admin-info .admin-name{font-size:12px;font-weight:700;color:white;}
+  .admin-info .admin-role{font-size:10px;color:rgba(255,255,255,0.4);}
+  .btn-signout{
+    margin-left:auto;background:none;border:none;
+    color:rgba(255,255,255,0.35);font-size:16px;cursor:pointer;
+    transition:color 0.2s;padding:2px;
+  }
+  .btn-signout:hover{color:#fca5a5;}
+  .btn-profile{
+    margin-left:auto;background:none;border:none;
+    color:rgba(255,255,255,0.55);font-size:16px;cursor:pointer;
+    transition:color 0.2s;padding:2px;
+  }
+  .btn-profile:hover{color:white;}
+
+  /* ── MAIN ── */
+  .main{
+    margin-left:var(--sidebar-w);
+    flex:1;
+    min-width:0;
+    display:flex;
+    flex-direction:column;
+    min-height:100vh;
+  }
+
+  .topbar{
+    background:white;
+    border-bottom:1px solid var(--border);
+    padding:0 28px;
+    height:58px;
+    display:flex;align-items:center;justify-content:space-between;
+    position:sticky;top:0;z-index:100;
+    box-shadow:0 1px 4px rgba(15,58,82,0.06);
+  }
+  .topbar-title{font-size:16px;font-weight:700;color:var(--text);}
+  .topbar-time{font-size:12px;color:var(--muted);}
+
+  .page-content{padding:28px;display:none;flex-direction:column;gap:24px;}
+  .page-content.active{display:flex;}
+
+  /* ── STATS ── */
+  .stats-row{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(170px,1fr));
+    gap:16px;
+  }
+  .stat-card{
+    background:white;border-radius:14px;padding:18px 20px;
+    border:1px solid var(--border);box-shadow:var(--shadow);
+    display:flex;align-items:center;gap:14px;
+  }
+  .stat-icon{
+    width:46px;height:46px;border-radius:12px;
+    display:flex;align-items:center;justify-content:center;
+    font-size:20px;flex-shrink:0;
+  }
+  .stat-icon.blue   {background:#dbeafe;}
+  .stat-icon.green  {background:#dcfce7;}
+  .stat-icon.purple {background:#ede9fe;}
+  .stat-icon.amber  {background:#fef3c7;}
+  .stat-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:var(--muted);margin-bottom:3px;}
+  .stat-value{font-size:24px;font-weight:800;color:var(--text);line-height:1;}
+
+  /* ── TABLE ── */
+  .panel{
+    background:white;border-radius:14px;
+    border:1px solid var(--border);box-shadow:var(--shadow);overflow:hidden;
+  }
+  .panel-header{
+    display:flex;align-items:center;justify-content:space-between;
+    padding:16px 22px;border-bottom:1px solid var(--border);background:#f8fafc;
+  }
+  .panel-title{display:flex;align-items:center;gap:9px;font-size:14px;font-weight:700;color:var(--text);}
+  .panel-title-icon{width:30px;height:30px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:15px;}
+
+  .table-wrap{overflow-x:auto;}
+  table{width:100%;border-collapse:collapse;font-size:13px;}
+  th{padding:11px 18px;text-align:left;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:var(--muted);border-bottom:1px solid var(--border);background:#f8fafc;}
+
+  /* Scoped to the Most-Searched Buildings & Rooms table only — caps its
+    height and scrolls internally instead of growing with the page, with
+    the header row pinned via position:sticky so column labels stay
+    visible while the rows scroll underneath. */
+  .table-wrap-scroll{overflow-x:auto;overflow-y:auto;max-height:420px;}
+  .table-wrap-scroll thead th{position:sticky;top:0;z-index:1;}
+  td{padding:13px 18px;border-bottom:1px solid #f1f5f9;color:var(--text);}
+  tr:last-child td{border-bottom:none;}
+  tr:hover td{background:#f8fbff;}
+
+  .role-badge{
+    display:inline-block;padding:2px 10px;border-radius:999px;
+    font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.4px;
+  }
+  .role-student  {background:#dbeafe;color:#1d4ed8;}
+  .role-employee {background:#dcfce7;color:#15803d;}
+  .role-visitor  {background:#fef3c7;color:#92400e;}
+  .role-admin    {background:#fee2e2;color:#991b1b;}
+
+  /* ── FORM PANEL ── */
+  .panel-form{
+    padding:18px 22px;border-bottom:1px solid var(--border);
+    display:flex;flex-direction:column;gap:12px;
+  }
+  .form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+  .form-group{display:flex;flex-direction:column;gap:5px;}
+  .form-group label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.4px;color:var(--muted);}
+  .form-input,.form-select,.form-textarea{
+    border:1.5px solid var(--border);border-radius:8px;
+    padding:9px 12px;font-size:13px;font-family:inherit;
+    color:var(--text);background:white;outline:none;
+    transition:border 0.2s,box-shadow 0.2s;
+  }
+  .form-input:focus,.form-select:focus,.form-textarea:focus{
+    border-color:var(--blue);box-shadow:0 0 0 3px rgba(30,91,122,0.1);
+  }
+  .form-textarea{resize:vertical;min-height:70px;}
+  .form-actions{display:flex;justify-content:flex-end;gap:10px;}
+  .form-actions-left{justify-content:flex-start;}
+
+  /* ── BUILDING ACTION CARDS (Footprint + Map Picker) ── */
+  .building-action-card{
+    border:1.5px solid var(--border);
+    border-radius:14px;
+    padding:18px 20px;
+    display:flex;
+    flex-direction:column;
+    gap:12px;
+    transition:box-shadow 0.2s, border-color 0.2s;
+  }
+  .building-action-card:hover{
+    box-shadow:0 4px 16px rgba(15,58,82,0.08);
+  }
+  .building-action-card.footprint{
+    background:linear-gradient(135deg,#f5f4ff 0%,#ffffff 65%);
+    border-color:#dcd9ff;
+  }
+  .building-action-card.pinpoint{
+    background:linear-gradient(135deg,#eef6fb 0%,#ffffff 65%);
+    border-color:#cfe6f2;
+  }
+  .building-action-header{
+    display:flex;
+    align-items:flex-start;
+    gap:14px;
+  }
+  .building-action-icon{
+    width:46px;height:46px;border-radius:12px;
+    display:flex;align-items:center;justify-content:center;
+    font-size:21px;flex-shrink:0;
+    box-shadow:0 2px 8px rgba(15,58,82,0.12);
+  }
+  .building-action-card.footprint .building-action-icon{background:var(--purple);}
+  .building-action-card.pinpoint .building-action-icon{background:var(--blue);}
+  .building-action-text{flex:1;min-width:0;}
+  .building-action-title{
+    font-size:14.5px;font-weight:800;color:var(--text);
+    margin-bottom:3px;
+  }
+  .building-action-desc{
+    font-size:12.5px;color:var(--muted);line-height:1.45;
+  }
+  .building-action-status{
+    font-size:11.5px;font-weight:600;color:var(--muted);
+    padding:2px 0;
+  }
+  .building-action-status.set{color:#15803d;}
+  .building-action-buttons{
+    display:flex;align-items:center;gap:8px;flex-wrap:wrap;
+  }
+  .btn-action-primary{
+    padding:11px 20px;border-radius:10px;
+    font-size:13.5px;font-weight:800;
+    font-family:inherit;cursor:pointer;border:none;
+    display:inline-flex;align-items:center;gap:7px;
+    color:white;transition:transform 0.15s, box-shadow 0.15s;
+    box-shadow:0 3px 10px rgba(15,58,82,0.16);
+  }
+  .btn-action-primary:hover{transform:translateY(-1px);box-shadow:0 5px 16px rgba(15,58,82,0.24);}
+  .building-action-card.footprint .btn-action-primary{background:var(--purple);}
+  .building-action-card.pinpoint .btn-action-primary{background:var(--blue);}
+  .btn-action-secondary{
+    padding:9px 14px;border-radius:9px;font-size:12.5px;font-weight:700;
+    font-family:inherit;cursor:pointer;
+    background:white;border:1.5px solid var(--border);color:var(--muted);
+    display:inline-flex;align-items:center;gap:5px;
+    transition:background 0.15s,color 0.15s,border-color 0.15s;
+  }
+  .btn-action-secondary:hover{background:var(--bg);color:var(--text);border-color:#cbd5e1;}
+  .building-action-divider{
+    height:1px;
+    background:rgba(15,58,82,0.08);
+    margin:2px 0;
+  }
+  .building-action-subfield{
+    display:flex;
+    align-items:center;
+    gap:12px;
+  }
+  .building-action-subfield label{
+    font-size:11px;font-weight:700;text-transform:uppercase;
+    letter-spacing:0.4px;color:var(--muted);
+    white-space:nowrap;
+  }
+  .building-action-subfield input{
+    max-width:120px;
+  }
+  .building-action-subfield-hint{
+    font-size:11.5px;
+    color:var(--muted);
+    line-height:1.4;
+    margin-top:-4px;
+  }
+
+  /* ── BUTTONS ── */
+  .btn{
+    padding:9px 18px;border-radius:8px;font-size:13px;font-weight:700;
+    font-family:inherit;cursor:pointer;border:none;transition:all 0.2s;
+    display:inline-flex;align-items:center;gap:6px;
+  }
+  .btn-primary{background:var(--blue);color:white;}
+  .btn-primary:hover{background:var(--dark-blue);transform:translateY(-1px);box-shadow:0 4px 12px rgba(30,91,122,0.25);}
+  .btn-primary:disabled{opacity:0.6;cursor:not-allowed;transform:none;}
+  .btn-ghost{background:transparent;color:var(--muted);border:1.5px solid var(--border);}
+  .btn-ghost:hover{background:var(--bg);color:var(--text);}
+  .btn-danger{background:var(--red);color:white;}
+  .btn-danger:hover{background:#c0392b;}
+  .btn-sm{padding:6px 12px;font-size:12px;}
+
+  /* ── ITEMS LIST ── */
+  .items-list{
+    padding:12px 22px 18px;
+    display:flex;flex-direction:column;gap:9px;
+    max-height:380px;overflow-y:auto;
+  }
+  .item-card{
+    border:1px solid var(--border);border-radius:10px;
+    padding:12px 14px;display:flex;align-items:flex-start;gap:11px;
+    background:#fafbfc;transition:box-shadow 0.2s,border-color 0.2s;
+  }
+  .item-card:hover{border-color:#cbd5e1;box-shadow:0 2px 8px rgba(15,58,82,0.07);}
+  .item-badge{
+    padding:3px 9px;border-radius:999px;font-size:10px;font-weight:700;
+    text-transform:uppercase;letter-spacing:0.4px;flex-shrink:0;
+  }
+  .badge-info     {background:#dbeafe;color:#1d4ed8;}
+  .badge-warning  {background:#fef3c7;color:#92400e;}
+  .badge-emergency{background:#fee2e2;color:#991b1b;}
+  .badge-event    {background:#ede9fe;color:#5b21b6;}
+  .item-body{flex:1;min-width:0;}
+  .item-title{font-size:13px;font-weight:700;color:var(--text);margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .item-meta{font-size:11px;color:var(--muted);display:flex;gap:10px;flex-wrap:wrap;}
+  .item-desc{font-size:12px;color:#475569;margin-top:3px;line-height:1.45;}
+  .item-actions{display:flex;gap:5px;flex-shrink:0;}
+  .icon-btn{
+    width:28px;height:28px;border-radius:7px;
+    border:1px solid var(--border);background:white;cursor:pointer;
+    display:flex;align-items:center;justify-content:center;font-size:13px;
+    transition:all 0.15s;
+  }
+  .icon-btn:hover{transform:scale(1.1);}
+  .icon-btn.delete:hover{background:#fee2e2;border-color:#fca5a5;}
+  .loading-msg{text-align:center;padding:28px;color:var(--muted);font-size:13px;}
+
+  /* ── TOAST ── */
+  .toast{
+    position:fixed;bottom:22px;right:22px;
+    padding:11px 18px;border-radius:10px;
+    font-size:13px;font-weight:600;color:white;
+    z-index:9999;transform:translateY(80px);opacity:0;
+    transition:all 0.3s cubic-bezier(0.34,1.56,0.64,1);
+    box-shadow:var(--shadow-lg);
+  }
+  .toast.show{transform:translateY(0);opacity:1;}
+  .toast.success{background:#16a34a;}
+  .toast.error{background:#dc2626;}
+  .toast.info{background:var(--blue);}
+
+  /* ── MODAL ── */
+  .modal-overlay{
+    display:none;position:fixed;inset:0;
+    background:rgba(15,23,42,0.45);z-index:500;
+    align-items:center;justify-content:center;
+  }
+  .modal-overlay.active{display:flex;}
+  .modal-box{
+    background:white;border-radius:16px;padding:26px;
+    max-width:390px;width:90%;box-shadow:var(--shadow-lg);text-align:center;
+  }
+  .modal-box h3{font-size:17px;margin-bottom:7px;color:var(--text);}
+  .modal-box p{font-size:13px;color:var(--muted);margin-bottom:18px;line-height:1.5;}
+  .modal-actions{display:flex;gap:10px;justify-content:center;}
+
+  .logout-box{text-align:left;border-radius:28px;}
+  .logout-box h3{font-size:20px;font-weight:500;margin-bottom:24px;}
+  .logout-actions{justify-content:flex-end;gap:4px;}
+  .btn-text{
+    background:none;border:none;padding:10px 14px;border-radius:8px;
+    font-size:13px;font-weight:600;letter-spacing:0.5px;text-transform:uppercase;
+    color:var(--text);cursor:pointer;transition:background 0.15s;
+  }
+  .btn-text:hover{background:rgba(0,0,0,0.06);}
+  .btn-text-accent{color:var(--blue);}
+
+  /* ── EMPTY STATE ── */
+  .empty-state{
+    text-align:center;padding:40px 20px;color:var(--muted);font-size:13px;
+  }
+  .empty-state .emoji{font-size:30px;display:block;margin-bottom:8px;}
+
+  /* ── SECTION HEADER ── */
+  .section-eyebrow{
+    font-size:10px;font-weight:700;text-transform:uppercase;
+    letter-spacing:1px;color:var(--muted);margin-bottom:4px;
+  }
+  .section-heading{font-size:20px;font-weight:800;color:var(--text);}
+
+  @media(max-width:768px){
+    .sidebar{width:min(78vw,300px);transform:translateX(-100%);box-shadow:var(--shadow-lg);}
+    .sidebar.active{transform:translateX(0);}
+    .main{margin-left:0;}
+    .topbar{padding:0 16px 0 62px;position:relative;}
+    .form-row{grid-template-columns:1fr;}
+    .stats-row{grid-template-columns:1fr 1fr;}
+    .page-content{padding:16px;gap:16px;}
+    .stat-card{padding:14px 16px;gap:10px;}
+    .stat-value{font-size:20px;}
+    .panel-header{padding:14px 16px;flex-wrap:wrap;gap:8px;}
+    .panel-form{padding:14px 16px;}
+    .profile-panel{width:min(360px,88vw);right:-100%;}
+  }
+
+  /* ── MOBILE SIDEBAR TOGGLE ── */
+  .admin-mobile-menu-toggle{
+    display:none;
+    position:fixed;
+    top:14px;left:14px;
+    width:38px;height:38px;
+    border:none;border-radius:10px;
+    background:var(--sidebar-bg);
+    color:#fff;
+    font-size:18px;
+    align-items:center;justify-content:center;
+    cursor:pointer;
+    z-index:210;
+    box-shadow:var(--shadow);
+  }
+  .admin-sidebar-overlay{
+    display:none;
+    position:fixed;inset:0;
+    background:rgba(15,23,42,0.35);
+    z-index:199;
+  }
+  .admin-sidebar-overlay.active{display:block;}
+
+  @media(max-width:768px){
+    .admin-mobile-menu-toggle{display:flex;}
+  }
+
+  @media(max-width:480px){
+    .stats-row{grid-template-columns:1fr;}
+    .topbar-title{font-size:14px;}
+    table{font-size:12px;}
+    th,td{padding:10px 12px;}
+  }
+
+  @media(max-height:480px) and (orientation:landscape){
+    .topbar{padding:0 16px 0 62px;min-height:48px;}
+    .page-content{padding:12px;gap:12px;}
+    .stat-card{padding:10px 14px;}
+  }
+
+
+  /* ── LOADING SCREEN ── */
+  .loading-screen {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(135deg, var(--blue) 0%, var(--dark-blue) 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.5s;
+  }
+  .loading-screen.active {
+      opacity: 1;
+      pointer-events: all;
+  }
+  .loading-content {
+      text-align: center;
+      color: white;
+  }
+  .logo-container {
+      margin-bottom: 30px;
+  }
+  .logo-circle {
+      width: 120px;
+      height: 120px;
+      background: rgba(255, 255, 255, 0.2);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto;
+      animation: pulse 2s ease-in-out infinite;
+      backdrop-filter: blur(10px);
+      border: 3px solid rgba(255, 255, 255, 0.3);
+  }
+  .logo-icon {
+      font-size: 60px;
+  }
+  .logo-img {
+      width: 80px;
+      height: 80px;
+      object-fit: contain;
+      display: block;
+  }
+  .sidebar-brand-icon-img {
+      width: 36px;
+      height: 36px;
+      object-fit: contain;
+      flex-shrink: 0;
+      display: block;
+  }
+  @keyframes pulse {
+      0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.4); }
+      50% { transform: scale(1.05); box-shadow: 0 0 0 20px rgba(255, 255, 255, 0); }
+  }
+  .loading-title {
+      font-size: 32px;
+      margin-bottom: 30px;
+      font-weight: 700;
+      text-shadow: 0 2px 10px rgba(0,0,0,0.2);
+  }
+  .loading-bar {
+      width: 300px;
+      height: 6px;
+      background: rgba(255, 255, 255, 0.2);
+      border-radius: 3px;
+      margin: 0 auto 20px;
+      overflow: hidden;
+  }
+  .loading-progress {
+      height: 100%;
+      background: white;
+      border-radius: 3px;
+      width: 0%;
+      animation: loading 2s ease-in-out forwards;
+  }
+  @keyframes loading {
+      0% { width: 0%; }
+      100% { width: 100%; }
+  }
+  .loading-text {
+      font-size: 16px;
+      opacity: 0.9;
+      animation: fadeInOut 1.5s ease-in-out infinite;
+  }
+  @keyframes fadeInOut {
+      0%, 100% { opacity: 0.5; }
+      50% { opacity: 1; }
+  }
+
+  /* ── EXPIRED VISITOR ACCOUNTS ── */
+  .ev-badge{background:#f1f5f9;color:#475569;font-size:11px;font-weight:700;padding:2px 10px;border-radius:999px;margin-left:6px;}
+  .ev-badge:empty{display:none;}
+  .ev-badge.ev-badge-alert{background:#fef3c7;color:#92400e;}
+  .ev-note{padding:12px 22px;border-bottom:1px solid var(--border);background:#f8fafc;font-size:12px;color:var(--muted);line-height:1.5;}
+  .ev-id{font-size:11px;background:#f1f5f9;padding:1px 6px;border-radius:4px;color:var(--muted);white-space:nowrap;}
+  .ev-request{display:inline-block;margin-top:5px;padding:2px 8px;border-radius:999px;background:#fef3c7;color:#92400e;font-size:10.5px;font-weight:700;}
+  .ev-sub{font-size:11px;color:var(--muted);margin-top:3px;}
+
+  /* ── VISITOR PURPOSE LOG ── */
+  .vl-count-badge{
+    background:#fef3c7;color:#92400e;
+    font-size:11px;font-weight:700;
+    padding:2px 10px;border-radius:999px;margin-left:6px;
+  }
+  .vl-count-badge:empty{display:none;}
+  .vl-filters{
+    display:grid;
+    grid-template-columns:minmax(200px,2fr) repeat(3,minmax(130px,1fr));
+    gap:10px;padding:12px 22px;
+    border-bottom:1px solid var(--border);background:#f8fafc;
+  }
+  .vl-filters .form-input,.vl-filters .form-select{font-size:12px;padding:7px 10px;min-width:0;}
+  .vl-stat-text{font-size:14px;line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .vl-table{min-width:980px;}
+  .vl-table td{vertical-align:top;}
+  .vl-table td:nth-child(3){min-width:150px;}
+  .vl-id{font-size:11px;background:#f1f5f9;padding:1px 6px;border-radius:4px;color:var(--muted);white-space:nowrap;}
+  .vl-sub{font-size:11px;color:var(--muted);margin-top:2px;}
+  .vl-purpose{
+    display:inline-block;padding:4px 10px;border-radius:8px;line-height:1.35;
+    background:#eef6fb;color:var(--blue);font-size:11.5px;font-weight:700;
+  }
+  .vl-details{color:var(--muted);font-size:12px;max-width:240px;}
+  .vl-status{
+    display:inline-flex;align-items:center;gap:5px;
+    padding:3px 10px;border-radius:999px;
+    font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:0.4px;
+  }
+  .vl-status::before{content:"";width:6px;height:6px;border-radius:50%;background:currentColor;}
+  .vl-status-enroute{background:#dbeafe;color:#1d4ed8;}
+  .vl-status-arrived{background:#dcfce7;color:#15803d;}
+  .vl-status-missed{background:#f1f5f9;color:#64748b;}
+  .vl-status-completed{background:#ede9fe;color:#5b21b6;}
+  .vl-status-checkedout{background:#ccfbf1;color:#0f766e;}
+  @media(max-width:768px){
+    .vl-filters{grid-template-columns:1fr 1fr;padding:12px 16px;}
+    .vl-filters .form-input{grid-column:1 / -1;}
+  }
+
+  </style>
+  </head>
+  <body>
+
+    <div id="loadingScreen" class="loading-screen active">
+      <div class="loading-content">
+          <div class="logo-container">
+              <div class="logo-circle">
+                <img src="images/system/logo/PRMSU_LOGO.png" alt="PRMSU logo" class="logo-img">
+            </div>
+          </div>
+          <h1 class="loading-title">PRMSU Admin Dashboard</h1>
+          <div class="loading-bar">
+              <div class="loading-progress"></div>
+          </div>
+          <p class="loading-text" id="adminLoadingText">Initializing dashboard...</p>
+      </div>
+  </div>
+
+  <!-- ══════════ SIDEBAR ══════════ -->
+  <nav class="sidebar" id="adminSidebar">
+    <div class="sidebar-brand">
+      <img src="images/system/logo/PRMSU_LOGO.png" alt="PRMSU logo" class="sidebar-brand-icon-img">
+      <div class="sidebar-brand-text">
+        <div class="name">PRMSU Navigator</div>
+        <div class="sub">Admin Dashboard</div>
+      </div>
+    </div>
+    <div class="sidebar-section-label">Overview</div>
+    <div class="nav-item active" onclick="showPage('overview',this)">
+      <span class="nav-icon">🏠</span> Overview
+    </div>
+    <div class="sidebar-section-label">Manage</div>
+    <div class="nav-item" onclick="showPage('alerts',this)">
+      <span class="nav-icon">📢</span> Campus Alerts
+    </div>
+    <div class="nav-item" onclick="showPage('tips',this)">
+      <span class="nav-icon">💡</span> Campus Tips
+    </div>
+    <div class="nav-item" onclick="showPage('buildings',this)">
+      <span class="nav-icon">🏛️</span> Buildings
+    </div>
+    <div class="nav-item" onclick="showPage('rooms',this)">
+      <span class="nav-icon">🚪</span> Rooms
+    </div>
+    <div class="nav-item" onclick="showPage('trees',this)">
+      <span class="nav-icon">🌳</span> Trees
+    </div>
+    <div class="nav-item" onclick="showPage('users',this)">
+      <span class="nav-icon">👥</span> Users
+    </div>
+    <div class="nav-item" onclick="showPage('visits',this)">
+      <span class="nav-icon">🧾</span> Visitor Log
+    </div>
+    <div class="sidebar-footer">
+      <div class="admin-chip" onclick="openProfile()" style="cursor:pointer;">
+        <div class="admin-avatar" id="sidebarAvatar">A</div>
+        <div class="admin-info">
+          <div class="admin-name" id="sidebarName">Admin</div>
+          <div class="admin-role">Administrator</div>
+        </div>
+        <button class="btn-profile" title="View Profile" onclick="openProfile()">👤</button>
+      </div>
+    </div>
+  </nav>
+
+  <button id="adminMobileMenuToggle" class="admin-mobile-menu-toggle" type="button" aria-controls="adminSidebar" aria-expanded="false" aria-label="Toggle menu">☰</button>
+  <div id="adminSidebarOverlay" class="admin-sidebar-overlay" aria-hidden="true"></div>
+
+  <!-- ══════════ MAIN ══════════ -->
+  <div class="main">
+
+    <div class="topbar">
+      <span class="topbar-title" id="topbarTitle">Overview</span>
+      <span class="topbar-time" id="topbarTime"></span>
+    </div>
+
+    <!-- ── OVERVIEW ── -->
+    <div class="page-content active" id="page-overview">
+      <div>
+        <div class="section-eyebrow">Dashboard</div>
+        <div class="section-heading">Overview</div>
+      </div>
+
+      <div class="stats-row">
+        <div class="stat-card">
+          <div class="stat-icon blue">👥</div>
+          <div><div class="stat-label">Total Users</div><div class="stat-value" id="statUsers">—</div></div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon amber">🏛️</div>
+          <div><div class="stat-label">Buildings</div><div class="stat-value" id="statBuildings">—</div></div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon green">📢</div>
+          <div><div class="stat-label">Active Alerts</div><div class="stat-value" id="statActive">—</div></div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon purple">🚪</div>
+          <div><div class="stat-label">Total Rooms</div><div class="stat-value" id="statRooms">—</div></div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon green">🟢</div>
+          <div><div class="stat-label">Active Users</div><div class="stat-value" id="statActiveUsersNow">—</div></div>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="panel-header">
+          <div class="panel-title">
+            <div class="panel-title-icon" style="background:#dbeafe;">👥</div>
+            Recent Users
+          </div>
+          <button class="btn btn-ghost btn-sm" onclick="loadUsers();loadStats();">↻ Refresh</button>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>User ID</th>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Role</th>
+                <th>Joined</th>
+              </tr>
+            </thead>
+            <tbody id="overviewUserTable">
+              <tr><td colspan="5" class="loading-msg">Loading...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── CAMPUS ALERTS ── -->
+    <div class="page-content" id="page-alerts">
+      <div>
+        <div class="section-eyebrow">Manage</div>
+        <div class="section-heading">Campus Alerts</div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-header">
+          <div class="panel-title">
+            <div class="panel-title-icon" style="background:#dbeafe;">📢</div>
+            Post Announcement
+          </div>
+          <button class="btn btn-ghost btn-sm" onclick="loadAnnouncements()">↻ Refresh</button>
+        </div>
+        <div class="panel-form">
+          <div class="form-group">
+            <label>Announcement Message *</label>
+            <input id="annMessage" class="form-input" type="text" maxlength="200">
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Type</label>
+              <select id="annType" class="form-select" onchange="updateAnnPlaceholder()">
+                <option value="info">📢 Info</option>
+                <option value="warning">⚠️ Warning</option>
+                <option value="emergency">🚨 Emergency</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Expires At (optional)</label>
+              <input id="annExpires" class="form-input" type="datetime-local">
+            </div>
+          </div>
+          <div class="form-actions">
+            <button class="btn btn-ghost" onclick="clearAnnForm()">Clear</button>
+            <button class="btn btn-primary" id="btnPostAnn" onclick="postAnnouncement()">📢 Post Announcement</button>
+          </div>
+        </div>
+        <div class="items-list" id="annList">
+          <div class="loading-msg">Loading announcements…</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── CAMPUS TIPS ── -->
+    <div class="page-content" id="page-tips">
+      <div>
+        <div class="section-eyebrow">Manage</div>
+        <div class="section-heading">Campus Tips</div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-header">
+          <div class="panel-title">
+            <div class="panel-title-icon" style="background:#dbeafe;">💡</div>
+            <span id="tipFormTitle">Post Campus Tip</span>
+          </div>
+          <button class="btn btn-ghost btn-sm" onclick="loadCampusTips()">↻ Refresh</button>
+        </div>
+        <div class="panel-form">
+          <div class="form-group">
+            <label>Tip Content *</label>
+            <input id="tipContent" class="form-input" type="text" maxlength="200"
+                placeholder="e.g. The Library is located near the main academic buildings.">
+          </div>
+          <div class="form-actions">
+            <button class="btn btn-ghost" id="btnCancelTipEdit" onclick="cancelTipEdit()" style="display:none;">Cancel</button>
+            <button class="btn btn-ghost" id="btnClearTip" onclick="clearTipForm()">Clear</button>
+            <button class="btn btn-primary" id="btnPostTip" onclick="postCampusTip()">💡 Post Tip</button>
+          </div>
+        </div>
+        <div class="items-list" id="tipsList">
+          <div class="loading-msg">Loading tips…</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── BUILDINGS ── -->
+    <div class="page-content" id="page-buildings">
+      <div>
+        <div class="section-eyebrow">Manage</div>
+        <div class="section-heading">Buildings</div>
+      </div>
+      <div class="panel">
+        <div class="panel-header">
+          <div class="panel-title">
+            <div class="panel-title-icon" style="background:#fef3c7;">🏛️</div>
+            Campus Buildings
+            <span id="buildingCountBadge" style="
+              background:#fef3c7;color:#92400e;
+              font-size:11px;font-weight:700;
+              padding:2px 10px;border-radius:999px;
+              margin-left:6px;
+            "></span>
+          </div>
+          <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+            <button class="btn btn-primary btn-sm" onclick="openAddBuilding()">➕ Add Building</button>
+            <input id="buildingSearch" class="form-input" type="text" placeholder="🔍 Search buildings…"
+              style="font-size:12px;padding:6px 12px;width:180px;" oninput="filterBuildings()">
+            <select id="buildingTypeFilter" class="form-select" style="font-size:12px;padding:6px 10px;" onchange="filterBuildings()">
+              <option value="">All Types</option>
+              <option value="department">Department</option>
+              <option value="administration">Administration</option>
+              <option value="facilities">Facilities</option>
+              <option value="office">Office</option>
+              <option value="landmark">Landmark</option>
+            </select>
+          </div>
+        </div>
+        <div class="panel-form" id="buildingFormWrap" style="display:none;">
+          <!-- ── FOOTPRINT SECTION — MOVED TO TOP ── -->
+        <div class="building-action-card footprint">
+          <div class="building-action-header">
+            <div class="building-action-icon">✏️</div>
+            <div class="building-action-text">
+              <div class="building-action-title">Draw Footprint</div>
+              <div class="building-action-desc">Draw the outline of the building on the map. This shape powers the 3D building extrusion shown to users.</div>
+            </div>
+          </div>
+          <div class="building-action-buttons">
+            <button type="button" class="btn-action-primary" onclick="toggleFootprintDrawer()">✏️ Draw Footprint</button>
+            <button type="button" class="btn-action-secondary" onclick="undoFootprintPoint()">↩️ Undo Last Point</button>
+            <button type="button" class="btn-action-secondary" onclick="clearFootprint()">🗑️ Clear</button>
+          </div>
+          <div id="footprintMapPicker" style="width:100%;height:280px;border-radius:10px;border:1.5px solid var(--border);margin-top:2px;display:none;"></div>
+          <div class="building-action-status" id="footprintStatus">No footprint drawn yet.</div>
+          <div class="building-action-divider"></div>
+          <div class="building-action-subfield">
+            <label for="buildingFootprintHeight">3D Extrusion Height (m)</label>
+            <input id="buildingFootprintHeight" class="form-input" type="number" min="0" step="1" value="4">
+          </div>
+          <div class="building-action-subfield-hint">How tall this building appears when the map is viewed in 3D — measured in meters.</div>
+        </div>
+
+          <!-- ── REST OF BUILDING INFO — MOVED BELOW FOOTPRINT ── -->
+          <div class="form-row">
+            <div class="form-group">
+              <label>Building Name *</label>
+              <input id="buildingName" class="form-input" type="text" placeholder="e.g. College of Engineering">
+            </div>
+            <div class="form-group">
+              <label>Short Name *</label>
+              <input id="buildingShortName" class="form-input" type="text" placeholder="e.g. COE">
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Description (optional)</label>
+            <textarea id="buildingDescription" class="form-textarea" placeholder="Brief description of the building shown in its details popup"></textarea>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Type</label>
+              <select id="buildingType" class="form-select">
+                <option value="department">Department</option>
+                <option value="administration">Administration</option>
+                <option value="facilities">Facilities</option>
+                <option value="office">Office</option>
+                <option value="landmark">Landmark</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Latitude (click map to set)</label>
+              <input id="buildingLat" class="form-input" type="number" step="any" placeholder="e.g. 15.31695">
+            </div>
+            <div class="form-group">
+              <label>Longitude (click map to set)</label>
+              <input id="buildingLng" class="form-input" type="number" step="any" placeholder="e.g. 119.98315">
+            </div>
+          </div>
+          <div class="building-action-card pinpoint">
+            <div class="building-action-header">
+              <div class="building-action-icon">🗺️</div>
+              <div class="building-action-text">
+                <div class="building-action-title">Open Map Picker</div>
+                <div class="building-action-desc">Select the building's exact location on the map — click to drop a pin, or drag it to fine-tune the position.</div>
+              </div>
+            </div>
+            <div class="building-action-buttons">
+              <button type="button" class="btn-action-primary" onclick="toggleBuildingMapPicker()">🗺️ Open Map Picker</button>
+            </div>
+            <div id="buildingMapPicker" style="width:100%;height:280px;border-radius:10px;border:1.5px solid var(--border);margin-top:2px;display:none;"></div>
+            <div class="building-action-status" id="buildingCoordsDisplay">No location pinned yet.</div>
+          </div>
+          <div class="form-actions form-actions-left" style="margin-top:16px;">
+            <button class="btn btn-ghost" onclick="cancelBuildingEdit()">Cancel</button>
+            <button class="btn btn-primary" id="btnSaveBuilding" onclick="saveBuilding()">➕ Add Building</button>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th>#</th><th>Name</th><th>Short Name</th><th>Type</th><th>Location</th><th>Actions</th></tr>
+            </thead>
+            <tbody id="buildingsTable"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── ROOMS ── -->
+    <div class="page-content" id="page-rooms">
+      <div>
+        <div class="section-eyebrow">Manage</div>
+        <div class="section-heading">Rooms</div>
+      </div>
+      <div class="panel">
+        <div class="panel-header">
+          <div class="panel-title">
+            <div class="panel-title-icon" style="background:#ede9fe;">🚪</div>
+            All Rooms
+            <span id="roomCountBadge" style="
+              background:#ede9fe;color:#5b21b6;
+              font-size:11px;font-weight:700;
+              padding:2px 10px;border-radius:999px;
+              margin-left:6px;
+            "></span>
+          </div>
+          <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+            <button class="btn btn-primary btn-sm" onclick="openAddRoom()">➕ Add Room</button>
+            <input id="roomSearch" class="form-input" type="text" placeholder="🔍 Search rooms…"
+                style="font-size:12px;padding:6px 12px;width:180px;" oninput="filterRooms()">
+            <select id="roomBuildingFilter" class="form-select" style="font-size:12px;padding:6px 10px;" onchange="filterRooms()">
+              <option value="">All Buildings</option>
+            </select>
+          </div>
+        </div>
+        <div class="panel-form" id="roomFormWrap" style="display:none;">
+          <div class="form-row">
+            <div class="form-group">
+              <label>Room Name *</label>
+              <input id="roomName" class="form-input" type="text" placeholder="e.g. CCIT Room 5">
+            </div>
+            <div class="form-group">
+              <label>Building *</label>
+              <select id="roomBuilding" class="form-select"></select>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Floor</label>
+              <select id="roomFloor" class="form-select">
+                <option value="Ground Floor">Ground Floor</option>
+                <option value="2nd Floor">2nd Floor</option>
+                <option value="3rd Floor">3rd Floor</option>
+                <option value="4th Floor">4th Floor</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Instructor (optional)</label>
+              <input id="roomInstructor" class="form-input" type="text" placeholder="e.g. Mr. Juan dela Cruz">
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Latitude (click map to set)</label>
+              <input id="roomLat" class="form-input" type="number" step="any" placeholder="e.g. 15.31695">
+            </div>
+            <div class="form-group">
+              <label>Longitude (click map to set)</label>
+              <input id="roomLng" class="form-input" type="number" step="any" placeholder="e.g. 119.98315">
+            </div>
+          </div>
+          <div class="building-action-card pinpoint">
+          <div class="building-action-header">
+            <div class="building-action-icon">🗺️</div>
+            <div class="building-action-text">
+              <div class="building-action-title">Open Map Picker</div>
+              <div class="building-action-desc">Select the room's exact location on the map — click to drop a pin, or drag it to fine-tune the position.</div>
+            </div>
+          </div>
+          <div class="building-action-buttons">
+            <button type="button" class="btn-action-primary" onclick="toggleRoomMapPicker()">🗺️ Open Map Picker</button>
+          </div>
+          <div id="roomMapPicker"></div>
+          <div class="building-action-status" id="coordsDisplay">No location pinned yet.</div>
+        </div>
+          <div class="form-actions form-actions-left" style="margin-top:16px;">
+            <button class="btn btn-ghost" onclick="cancelRoomEdit()">Cancel</button>
+            <button class="btn btn-primary" id="btnSaveRoom" onclick="saveRoom()">➕ Add Room</button>
+          </div>
+        </div>
+          <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th>Room Name</th><th>Building</th><th>Floor</th><th>Instructor</th><th>Location</th><th>Actions</th></tr>
+            </thead>
+            <tbody id="roomsTable"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── TREES ── -->
+    <div class="page-content" id="page-trees">
+      <div>
+        <div class="section-eyebrow">Manage</div>
+        <div class="section-heading">Trees</div>
+      </div>
+      <div class="panel">
+        <div class="panel-header">
+          <div class="panel-title">
+            <div class="panel-title-icon" style="background:#dcfce7;">🌳</div>
+            Campus Trees
+            <span id="treeCountBadge" style="
+              background:#dcfce7;color:#166534;
+              font-size:11px;font-weight:700;
+              padding:2px 10px;border-radius:999px;
+              margin-left:6px;
+            "></span>
+          </div>
+          <select id="treeBuildingFilter" class="form-select" style="font-size:12px;padding:6px 10px;" onchange="filterTrees()">
+            <option value="">All Buildings</option>
+          </select>
+        </div>
+        <div class="building-action-card pinpoint">
+          <div class="building-action-header">
+            <div class="building-action-icon">🗺️</div>
+            <div class="building-action-text">
+              <div class="building-action-title">Tree map</div>
+              <div class="building-action-desc">Click anywhere to plant a tree. Drag a tree to move it, or click it to adjust its size, link it to a building, or remove it.</div>
+            </div>
+          </div>
+          <div id="treeMapPicker" style="width:100%;height:420px;border-radius:10px;border:1.5px solid var(--border);margin-top:2px;"></div>
+          <div class="building-action-status" id="treeStatus">Loading trees…</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── USERS ── -->
+    <div class="page-content" id="page-users">
+      <div>
+        <div class="section-eyebrow">Manage</div>
+        <div class="section-heading">Users</div>
+      </div>
+      <div class="panel">
+        <div class="panel-header">
+          <div class="panel-title">
+            <div class="panel-title-icon" style="background:#fef3c7;">🪪</div>
+            Pending ID Verification
+            <span id="pendingUsersBadge" style="
+              background:#fef3c7;color:#92400e;
+              font-size:11px;font-weight:700;
+              padding:2px 10px;border-radius:999px;
+              margin-left:6px;
+            "></span>
+          </div>
+          <button class="btn btn-ghost btn-sm" onclick="loadPendingUsers()">↻ Refresh</button>
+        </div>
+        <div style="padding:12px 22px;">
+          <div id="pendingUsersList" style="display:flex;flex-direction:column;gap:10px;">
+            <div class="loading-msg">Loading…</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-header">
+          <div class="panel-title">
+            <div class="panel-title-icon" style="background:#dcfce7;">🟢</div>
+            Active Users Now
+          </div>
+        </div>
+        <div style="padding:18px 22px;">
+          <ul id="activeUsersList" style="list-style:none;display:flex;flex-direction:column;gap:9px;font-size:13px;color:var(--text);">
+            <li style="color:var(--muted);">Loading…</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- ID Preview Modal -->
+      <div id="idPreviewOverlay" onclick="closeIdPreview()" style="
+        display:none; position:fixed; inset:0; z-index:3000;
+        background:rgba(15,58,82,0.5); align-items:center; justify-content:center;
+      ">
+        <img id="idPreviewImage" src="" style="max-width:90vw;max-height:85vh;border-radius:8px;box-shadow:0 8px 32px rgba(0,0,0,0.4);" onclick="event.stopPropagation()">
+      </div>
+      <div class="panel">
+        <div class="panel-header">
+          <div class="panel-title">
+            <div class="panel-title-icon" style="background:#dcfce7;">👥</div>
+            All Users
+            <span id="userCountBadge" style="
+              background:#dcfce7;color:#15803d;
+              font-size:11px;font-weight:700;
+              padding:2px 10px;border-radius:999px;
+              margin-left:6px;
+            "></span>
+          </div>
+          <button class="btn btn-ghost btn-sm" onclick="loadUsers();loadStats();">↻ Refresh</button>
+        </div>
+        <div style="padding:12px 22px;border-bottom:1px solid var(--border);display:flex;gap:10px;flex-wrap:wrap;background:#f8fafc;">
+          <input id="userSearch" class="form-input" type="text" placeholder="🔍 Search name or email…"
+            style="flex:1;min-width:180px;font-size:12px;padding:7px 12px;"
+            oninput="filterUsers()">
+          <select id="userRoleFilter" class="form-select" style="font-size:12px;padding:7px 10px;" onchange="filterUsers()">
+            <option value="">All Roles</option>
+            <option value="STUDENT">Student</option>
+            <option value="EMPLOYEE">Employee</option>
+            <option value="VISITOR">Visitor</option>
+            <option value="ADMIN">Admin</option>
+          </select>
+          <select id="userSortFilter" class="form-select" style="font-size:12px;padding:7px 10px;" onchange="filterUsers()">
+            <option value="newest">Newest First</option>
+            <option value="oldest">Oldest First</option>
+          </select>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th>User ID</th><th>Name</th><th>Email</th><th>Role</th><th>Joined</th></tr>
+            </thead>
+            <tbody id="usersTable">
+              <tr><td colspan="5" class="loading-msg">Loading...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-header">
+          <div class="panel-title">
+            <div class="panel-title-icon" style="background:#f1f5f9;">⏳</div>
+            Expired Visitor Accounts
+            <span id="expiredVisitorsBadge" class="ev-badge"></span>
+          </div>
+          <button class="btn btn-ghost btn-sm" onclick="loadExpiredVisitors()">↻ Refresh</button>
+        </div>
+        <div class="ev-note">
+          Visitor accounts are valid only from <strong>7:00 AM to 5:00 PM</strong> on the day of the visit and are deactivated automatically at 5:00 PM.
+          Reactivating grants access again until 5:00 PM today. Uploaded ID photos are deleted 30 days after expiry.
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th>Visitor</th><th>Email</th><th>Registered</th><th>Expired</th><th>Visits</th><th>Last Visit</th><th>Action</th></tr>
+            </thead>
+            <tbody id="expiredVisitorsTable">
+              <tr><td colspan="7" class="loading-msg">Loading...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── VISITOR PURPOSE LOG ── -->
+    <div class="page-content" id="page-visits">
+      <div>
+        <div class="section-eyebrow">Monitor</div>
+        <div class="section-heading">Visitor Purpose Log</div>
+      </div>
+
+      <div class="stats-row">
+        <div class="stat-card">
+          <div class="stat-icon amber">🧾</div>
+          <div><div class="stat-label">Visit Records</div><div class="stat-value" id="vlStatTotal">—</div></div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon blue">🚶</div>
+          <div><div class="stat-label">Unique Visitors</div><div class="stat-value" id="vlStatVisitors">—</div></div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon green">✅</div>
+          <div><div class="stat-label">Arrived</div><div class="stat-value" id="vlStatArrived">—</div></div>
+        </div>
+        <div class="stat-card" title="Visitors who arrived somewhere today but have not checked out at a gate">
+          <div class="stat-icon amber">📍</div>
+          <div><div class="stat-label">Still on Campus</div><div class="stat-value" id="vlStatOnCampus">—</div></div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon purple">📌</div>
+          <div style="min-width:0;"><div class="stat-label">Top Purpose</div><div class="stat-value vl-stat-text" id="vlStatTopPurpose">—</div></div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-header">
+          <div class="panel-title">
+            <div class="panel-title-icon" style="background:#fef3c7;">🧾</div>
+            Visitor Purpose Log
+            <span id="vlCountBadge" class="vl-count-badge"></span>
+          </div>
+          <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+            <button class="btn btn-ghost btn-sm" onclick="exportVisitsCsv()">⬇️ Export CSV</button>
+            <button class="btn btn-ghost btn-sm" onclick="loadVisitorVisits()">↻ Refresh</button>
+          </div>
+        </div>
+
+        <div class="vl-filters">
+          <input id="vlSearch" class="form-input" type="text" placeholder="🔍 Search visitor, ID or destination…" oninput="renderVisitorVisits()">
+          <select id="vlRange" class="form-select" onchange="loadVisitorVisits()">
+            <option value="today">Today</option>
+            <option value="7" selected>Last 7 Days</option>
+            <option value="30">Last 30 Days</option>
+            <option value="all">All Time</option>
+          </select>
+          <select id="vlPurposeFilter" class="form-select" onchange="renderVisitorVisits()">
+            <option value="">All Purposes</option>
+          </select>
+          <select id="vlStatusFilter" class="form-select" onchange="renderVisitorVisits()">
+            <option value="">All Statuses</option>
+            <option value="en_route">En Route</option>
+            <option value="arrived">Arrived</option>
+            <option value="completed">Completed</option>
+            <option value="checked_out">Checked Out</option>
+            <option value="not_reached">Not Reached</option>
+          </select>
+        </div>
+
+        <div class="table-wrap">
+          <table class="vl-table">
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Time</th>
+                <th>Visitor</th>
+                <th>Destination</th>
+                <th>Purpose of Visit</th>
+                <th>Details</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody id="visitPurposeTable">
+              <tr><td colspan="7" class="loading-msg">Loading...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── PROFILE PANEL ── -->
+  <div class="profile-overlay" id="profileOverlay" onclick="closeProfile()"></div>
+  <div class="profile-panel" id="profilePanel">
+    <div class="profile-panel-header">
+      <button class="profile-close" onclick="closeProfile()">✕</button>
+      <div class="profile-avatar-wrap">
+        <div class="profile-avatar-lg" id="profileAvatarLg">A</div>
+        <div class="profile-avatar-edit" onclick="document.getElementById('profilePhotoInput').click()">📷</div>
+        <input type="file" id="profilePhotoInput" accept="image/*" onchange="uploadProfilePhoto(this)">
+      </div>
+      <div class="profile-panel-name" id="profilePanelName">Admin</div>
+      <div class="profile-panel-role">Administrator</div>
+      <div class="profile-panel-id" id="profilePanelId">ID: —</div>
+    </div>
+
+    <div class="profile-section-title">Account Details</div>
+    <div class="profile-detail-card">
+      <div class="profile-detail-row">
+        <span class="profile-detail-label">Full Name</span>
+        <span class="profile-detail-value" id="profileFullName">—</span>
+      </div>
+      <div class="profile-detail-row">
+        <span class="profile-detail-label">Email</span>
+        <span class="profile-detail-value" id="profileEmail">—</span>
+      </div>
+      <div class="profile-detail-row">
+        <span class="profile-detail-label">Role</span>
+        <span class="profile-detail-value" id="profileRole">—</span>
+      </div>
+      <div class="profile-detail-row">
+        <span class="profile-detail-label">User ID</span>
+        <span class="profile-detail-value" id="profileUserId">—</span>
+      </div>
+    </div>
+    <button class="profile-signout" onclick="openLogoutModal()">🚪 Sign Out</button>
+  </div>
+
+  <!-- Logout Confirmation Modal -->
+  <div class="modal-overlay" id="logoutModal">
+    <div class="modal-box logout-box">
+      <h3>Log out of your account?</h3>
+      <div class="modal-actions logout-actions">
+        <button class="btn-text" onclick="closeLogoutModal()">CANCEL</button>
+        <button class="btn-text btn-text-accent" onclick="adminLogout()">LOG OUT</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Delete Modal -->
+  <div class="modal-overlay" id="deleteModal">
+    <div class="modal-box">
+      <h3>Delete this item?</h3>
+      <p id="deleteModalMsg">This action cannot be undone.</p>
+      <div class="modal-actions">
+        <button class="btn btn-ghost" onclick="closeDeleteModal()">Cancel</button>
+        <button class="btn btn-danger" onclick="confirmDelete()">Delete</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script>
+
+  // ── AUTH ──
+  const AUTH_SESSION_KEY = 'campusNavigatorSession';
+  function getSession(){try{return JSON.parse(localStorage.getItem(AUTH_SESSION_KEY));}catch{return null;}}
+
+  async function adminFetch(url, options = {}) {
+    const s = getSession();
+    const adminUserId = s?.userId || '';
+    const method = (options.method || 'GET').toUpperCase();
+
+    if (method === 'GET' || method === 'DELETE') {
+      const sep = url.includes('?') ? '&' : '?';
+      url = `${url}${sep}adminUserId=${encodeURIComponent(adminUserId)}`;
+    } else {
+      let body = {};
+      try { body = options.body ? JSON.parse(options.body) : {}; } catch { body = {}; }
+      body.adminUserId = adminUserId;
+      options = {
+        ...options,
+        headers: { 'Content-Type': 'application/json', ...(options.headers || {}) },
+        body: JSON.stringify(body)
+      };
+    }
+    return fetch(url, options);
+  }
+
+  function openLogoutModal(){document.getElementById('logoutModal').classList.add('active');}
+  function closeLogoutModal(){document.getElementById('logoutModal').classList.remove('active');}
+
+  function adminLogout(){
+    // ✅ Close this tab's realtime connection first so the active-users count
+    // drops immediately, instead of waiting for the browser to notice the
+    // dropped connection during navigation.
+    if (typeof realtimeEventSource !== 'undefined' && realtimeEventSource) {
+      realtimeEventSource.close();
+      realtimeEventSource = null;
+    }
+    localStorage.removeItem(AUTH_SESSION_KEY);
+    window.location.href='/';
+  }
+
+  function initAdminDashboard(s){
+    const initials = (s.name||'A').split(' ').map(w=>w[0]).join('').substring(0,2).toUpperCase();
+    document.getElementById('sidebarAvatar').textContent = initials;
+    document.getElementById('sidebarName').textContent   = s.name || 'Admin';
+    // Load photo immediately on page load
+    fetch(`/api/auth/profile/${s.userId}`)
+      .then(r => r.json())
+      .then(data => {
+        if (data.ok && data.user.photo) {
+          const photoHtml = `<img src="${data.user.photo}" alt="avatar" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`;
+          document.getElementById('sidebarAvatar').innerHTML = photoHtml;
+        }
+      })
+      .catch(() => {});
+  }
+
+  (function guardAdmin(){
+    const s = getSession();
+    if (s && (s.role||'').toUpperCase()==='ADMIN') {
+      initAdminDashboard(s);
+      return;
+    }
+
+    // ✅ On a fresh navigation right after login, the session write can very
+    // occasionally not be visible yet on this very first synchronous read
+    // (seen right after starting the server / a cold browser state) — that's
+    // the "flashes then kicks back to login" glitch. Retry once, shortly
+    // after, before treating it as a real access-denied case.
+    setTimeout(() => {
+      const s2 = getSession();
+      if (!s2 || (s2.role||'').toUpperCase() !== 'ADMIN') {
+        alert('Access denied.');
+        window.location.href='/';
+        return;
+      }
+      initAdminDashboard(s2);
+    }, 150);
+  })();
+
+  // ── CLOCK ──
+  function updateClock(){
+    const now=new Date();
+    const h=now.getHours(),m=now.getMinutes();
+    const ap=h>=12?'PM':'AM';
+    const dh=h%12||12;
+    document.getElementById('topbarTime').textContent=
+      `${dh}:${String(m).padStart(2,'0')} ${ap}`;
+  }
+  updateClock();setInterval(updateClock,1000);
+
+  // ── NAVIGATION ──
+  const PAGE_TITLES={overview:'Overview',alerts:'Campus Alerts',tips:'Campus Tips',buildings:'Buildings',rooms:'Rooms',trees:'Trees',users:'Users',visits:'Visitor Purpose Log'};
+
+  // ✅ Clears transient Manage Buildings UI state (unsaved Add/Edit form +
+  // search/filter inputs) without touching any saved building record.
+  // cancelBuildingEdit() already does the full form teardown (destroys the
+  // picker maps, clears footprintPoints, hides the form) — this just makes
+  // sure it only runs when the form is actually open, and additionally
+  // resets the search box and type filter, which cancelBuildingEdit() never
+  // touched since it wasn't designed for page-navigation cleanup.
+  function resetBuildingsFormState(){
+    const formWrap = document.getElementById('buildingFormWrap');
+    if (formWrap && formWrap.style.display !== 'none') {
+      cancelBuildingEdit();
+    }
+    const searchInput = document.getElementById('buildingSearch');
+    if (searchInput) searchInput.value = '';
+    const typeFilter = document.getElementById('buildingTypeFilter');
+    if (typeFilter) typeFilter.value = '';
+  }
+
+  // ✅ Same treatment for Manage Rooms: clears transient Add/Edit Room form
+  // input and the search/building-filter inputs without touching any saved
+  // room record. cancelRoomEdit() already does the full form teardown
+  // (destroys roomPickerMap, removes the stale toggle bar, hides the form).
+  function resetRoomsFormState(){
+    const formWrap = document.getElementById('roomFormWrap');
+    if (formWrap && formWrap.style.display !== 'none') {
+      cancelRoomEdit();
+    }
+    const searchInput = document.getElementById('roomSearch');
+    if (searchInput) searchInput.value = '';
+    const buildingFilter = document.getElementById('roomBuildingFilter');
+    if (buildingFilter) buildingFilter.value = '';
+  }
+
+  // ✅ Same treatment for Manage Users: there's no Add/Edit User form on
+  // this page, so this just resets the search box, role filter, and sort
+  // order back to their defaults. Never touches allUsers or the DB —
+  // filterUsers() is a pure client-side re-render, and loadUsers() (called
+  // separately by showPage on entry to 'users'/'overview') re-fetches the
+  // real saved list.
+  function resetUsersFilterState(){
+    const searchInput = document.getElementById('userSearch');
+    if (searchInput) searchInput.value = '';
+    const roleFilter = document.getElementById('userRoleFilter');
+    if (roleFilter) roleFilter.value = '';
+    const sortFilter = document.getElementById('userSortFilter');
+    if (sortFilter) sortFilter.value = 'newest';
+  }
+
+  // ✅ Same treatment for Manage Users: there's no Add/Edit User form on
+  // this page, so this just resets the search box, role filter, and sort
+  // order back to their defaults. Never touches allUsers or the DB —
+  // filterUsers() is a pure client-side re-render, and loadUsers() (called
+  // separately by showPage on entry to 'users'/'overview') re-fetches the
+  // real saved list.
+  function resetUsersFilterState(){
+    const searchInput = document.getElementById('userSearch');
+    if (searchInput) searchInput.value = '';
+    const roleFilter = document.getElementById('userRoleFilter');
+    if (roleFilter) roleFilter.value = '';
+    const sortFilter = document.getElementById('userSortFilter');
+    if (sortFilter) sortFilter.value = 'newest';
+  }
+
+  function showPage(id, el){
+    // ✅ Guard: clicking (or double-clicking) a nav item that's already the
+    // active page shouldn't reload its data — only actual navigation to a
+    // different page, or the page's own Refresh button, should trigger a fetch.
+    const alreadyOnThisPage = document.getElementById('page-'+id)?.classList.contains('active');
+    if (alreadyOnThisPage) return;
+
+    // ✅ Capture which page we're navigating AWAY FROM before the active
+    // classes get swapped, so per-page transient UI state (the unsaved Add/
+    // Edit Building form, search box, type filter) can be reset on exit.
+    const previousPageId = document.querySelector('.page-content.active')?.id?.replace('page-', '') || null;
+
+    document.querySelectorAll('.page-content').forEach(p=>p.classList.remove('active'));
+    document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+    document.getElementById('page-'+id).classList.add('active');
+    if(el) el.classList.add('active');
+    document.getElementById('topbarTitle').textContent = PAGE_TITLES[id]||id;
+
+    // ✅ Leaving Buildings for any other page: discard any unsaved Add/Edit
+    // Building form input and reset the search box + type filter back to
+    // defaults, so returning to Buildings later always starts clean. This
+    // never touches saved buildings — loadBuildings() still reloads the
+    // real list from the DB below, and if the page you're leaving isn't
+    // Buildings (e.g. Rooms → Trees), nothing here runs at all.
+    if (previousPageId === 'buildings' && id !== 'buildings') {
+      resetBuildingsFormState();
+    }
+
+    // ✅ Same behavior leaving Manage Rooms — see resetRoomsFormState().
+    if (previousPageId === 'rooms' && id !== 'rooms') {
+      resetRoomsFormState();
+    }
+
+    // ✅ Same behavior leaving Manage Campus Alerts. Unlike Buildings/Rooms,
+    // the Post Announcement form has no open/close toggle — it's always
+    // visible on the page — and there's no search/filter on the
+    // announcements list, so clearAnnForm() (already used by the existing
+    // "Clear" button) is all that's needed: it resets the message, type,
+    // and expiry fields, and refreshes the type placeholder. Posted/saved
+    // announcements are untouched — loadAnnouncements() still reloads the
+    // real list from the DB when you return to Alerts.
+    if (previousPageId === 'alerts' && id !== 'alerts') {
+      clearAnnForm();
+    }
+
+    // Same behavior leaving Manage Campus Tips — discard any unsaved
+    // Post/Edit form input so returning later always starts clean.
+    if (previousPageId === 'tips' && id !== 'tips') {
+      cancelTipEdit();
+    }
+
+    // ✅ Same behavior leaving Manage Users. There's no Add/Edit User form
+    // here — just the search box, role filter, and sort order on the All
+    // Users table — so reset those three back to their defaults. No saved
+    // user data is touched: loadUsers() still reloads the real list from
+    // the DB when you return to Users (or Overview, which shares it).
+    if (previousPageId === 'users' && id !== 'users') {
+      resetUsersFilterState();
+    }
+
+    if(id==='users'||id==='overview') { loadUsers(); loadPendingUsers(); }
+    if(id==='overview') loadStats();
+    if(id==='users') { loadActiveUsersList(); loadExpiredVisitors(); } // ✅ MOVED here from Overview
+    if(id==='alerts') loadAnnouncements();
+    if(id==='tips') loadCampusTips();
+    if(id==='buildings') loadBuildings();
+    if(id==='rooms') loadRooms();
+    if(id==='trees') loadTreesPage();
+    if(id==='visits') loadVisitorVisits();
+  }
+
+  // ── VISITOR PURPOSE LOG ──
+  function escapeHtml(str){
+    const d = document.createElement('div');
+    d.textContent = str ?? '';
+    return d.innerHTML;
+  }
+
+  // Status is decided by the server:
+  //   en_route    → purpose given, on the way
+  //   arrived     → the visitor's GPS reached the destination
+  //   completed   → the visitor tapped "Yes, I'm done"
+  //   checked_out → the visitor reached an exit gate after the visit
+  //   not_reached → never arrived within 30 minutes
+  const VISIT_STATUS = {
+    en_route:    { label: 'En Route',    cls: 'vl-status-enroute' },
+    arrived:     { label: 'Arrived',     cls: 'vl-status-arrived' },
+    completed:   { label: 'Completed',   cls: 'vl-status-completed' },
+    checked_out: { label: 'Checked Out', cls: 'vl-status-checkedout' },
+    not_reached: { label: 'Not Reached', cls: 'vl-status-missed'  }
+  };
+
+  let visitLogRows = [];
+  let visitsOnCampus = null;
+
+  function formatVisitDate(ts){
+    return new Date(ts).toLocaleDateString('en-PH', { timeZone: 'Asia/Manila', month: 'short', day: 'numeric', year: 'numeric' });
+  }
+  function formatVisitTime(ts){
+    return new Date(ts).toLocaleTimeString('en-PH', { timeZone: 'Asia/Manila', hour: 'numeric', minute: '2-digit' });
+  }
+
+  async function loadVisitorVisits(background = false){
+    const body = document.getElementById('visitPurposeTable');
+    if (!body) return;
+    if (!background) body.innerHTML = `<tr><td colspan="7" class="loading-msg">Loading…</td></tr>`;
+
+    const range = document.getElementById('vlRange')?.value || '7';
+    try {
+      const res = await adminFetch(`/api/admin/visits?range=${encodeURIComponent(range)}`);
+      const data = await res.json();
+      if (!data.ok) throw new Error(data.error || 'Failed to load the visitor log.');
+      visitLogRows = data.visits || [];
+      visitsOnCampus = typeof data.onCampus === 'number' ? data.onCampus : null;
+
+      // Purpose filter options come from the server (same list the visitors
+      // choose from), keeping whatever the admin had selected.
+      const purposeSelect = document.getElementById('vlPurposeFilter');
+      if (purposeSelect && Array.isArray(data.purposes)) {
+        const current = purposeSelect.value;
+        purposeSelect.innerHTML = `<option value="">All Purposes</option>` +
+          data.purposes.map(p => `<option value="${escapeHtml(p.value)}">${escapeHtml(p.label)}</option>`).join('');
+        purposeSelect.value = current;
+      }
+
+      renderVisitorVisits();
+    } catch (err) {
+      body.innerHTML = `<tr><td colspan="7" class="loading-msg" style="color:#ef4444;">${escapeHtml(err.message)}</td></tr>`;
+      if (!background) showToast(err.message, 'error');
+    }
+  }
+
+  function getFilteredVisits(){
+    const q = (document.getElementById('vlSearch')?.value || '').trim().toLowerCase();
+    const purpose = document.getElementById('vlPurposeFilter')?.value || '';
+    const status = document.getElementById('vlStatusFilter')?.value || '';
+
+    return visitLogRows.filter(v => {
+      if (purpose && v.purpose !== purpose) return false;
+      if (status && v.status !== status) return false;
+      if (q) {
+        const haystack = [v.full_name, v.user_id, v.destination_name, v.building_name, v.details]
+          .filter(Boolean).join(' ').toLowerCase();
+        if (!haystack.includes(q)) return false;
+      }
+      return true;
+    });
+  }
+
+  function renderVisitorVisits(){
+    const body = document.getElementById('visitPurposeTable');
+    if (!body) return;
+
+    // Summary cards reflect the whole selected date range.
+    const purposeCounts = {};
+    visitLogRows.forEach(v => {
+      const key = v.purpose_label || v.purpose;
+      purposeCounts[key] = (purposeCounts[key] || 0) + 1;
+    });
+    const top = Object.entries(purposeCounts).sort((a, b) => b[1] - a[1])[0];
+    document.getElementById('vlStatTotal').textContent = visitLogRows.length;
+    document.getElementById('vlStatVisitors').textContent = new Set(visitLogRows.map(v => v.user_id)).size;
+    document.getElementById('vlStatArrived').textContent = visitLogRows.filter(v => v.arrived_at).length;
+    document.getElementById('vlStatOnCampus').textContent = visitsOnCampus ?? '—';
+    const topEl = document.getElementById('vlStatTopPurpose');
+    topEl.textContent = top ? top[0] : '—';
+    topEl.title = top ? `${top[0]} (${top[1]})` : '';
+
+    const rows = getFilteredVisits();
+    const badge = document.getElementById('vlCountBadge');
+    if (badge) {
+      badge.textContent = rows.length === visitLogRows.length
+        ? `${rows.length}`
+        : `${rows.length} of ${visitLogRows.length}`;
+    }
+
+    if (!rows.length) {
+      body.innerHTML = `<tr><td colspan="7" class="loading-msg">${
+        visitLogRows.length ? 'No records match your filters.' : 'No visitor purposes recorded for this period.'
+      }</td></tr>`;
+      return;
+    }
+
+    body.innerHTML = rows.map(v => {
+      const st = VISIT_STATUS[v.status] || VISIT_STATUS.en_route;
+      let arrivedNote = '';
+      if (v.status === 'checked_out' && v.checked_out_at) {
+        arrivedNote = `<div class="vl-sub">${formatVisitTime(v.checked_out_at)}${v.checkout_gate ? ` · ${escapeHtml(v.checkout_gate)}` : ''}</div>`;
+      } else if (v.status === 'completed' && v.completed_at) {
+        arrivedNote = `<div class="vl-sub">at ${formatVisitTime(v.completed_at)}</div>`;
+      } else if (v.status === 'arrived' && v.arrived_at) {
+        arrivedNote = `<div class="vl-sub">at ${formatVisitTime(v.arrived_at)}</div>`;
+      }
+      return `
+        <tr>
+          <td style="white-space:nowrap;">${formatVisitDate(v.created_at)}</td>
+          <td style="white-space:nowrap;color:var(--muted);">${formatVisitTime(v.created_at)}</td>
+          <td>
+            <div style="font-weight:600;">${escapeHtml(v.full_name || '—')}</div>
+            <code class="vl-id">${escapeHtml(v.user_id)}</code>
+          </td>
+          <td>
+            <div>${v.destination_type === 'room' ? '🚪' : '🏛️'} ${escapeHtml(v.destination_name)}</div>
+            ${v.building_name ? `<div class="vl-sub">${escapeHtml(v.building_name)}</div>` : ''}
+          </td>
+          <td><span class="vl-purpose">${escapeHtml(v.purpose_label || v.purpose)}</span></td>
+          <td class="vl-details">${escapeHtml(v.details || '—')}</td>
+          <td style="white-space:nowrap;">
+            <span class="vl-status ${st.cls}">${st.label}</span>
+            ${arrivedNote}
+          </td>
+        </tr>`;
+    }).join('');
+  }
+
+  // Downloads exactly what's on screen (current range + filters) as a CSV
+  // that opens cleanly in Excel.
+  function exportVisitsCsv(){
+    const rows = getFilteredVisits();
+    if (!rows.length) { showToast('Nothing to export.', 'info'); return; }
+
+    const header = ['Date', 'Time', 'Visitor Name', 'User ID', 'Destination', 'Building', 'Type', 'Purpose', 'Details', 'Status', 'Arrived At', 'Completed At', 'Checked Out At', 'Exit Gate'];
+    const stamp = (ts) => ts ? `${formatVisitDate(ts)} ${formatVisitTime(ts)}` : '';
+    const lines = rows.map(v => [
+      formatVisitDate(v.created_at),
+      formatVisitTime(v.created_at),
+      v.full_name || '',
+      v.user_id,
+      v.destination_name,
+      v.building_name || '',
+      v.destination_type || '',
+      v.purpose_label || v.purpose,
+      v.details || '',
+      (VISIT_STATUS[v.status] || VISIT_STATUS.en_route).label,
+      stamp(v.arrived_at),
+      stamp(v.completed_at),
+      stamp(v.checked_out_at),
+      v.checkout_gate || ''
+    ]);
+    const csv = [header, ...lines]
+      .map(cols => cols.map(c => `"${String(c).replace(/"/g, '""')}"`).join(','))
+      .join('\r\n');
+
+    const blob = new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = `visitor-purpose-log-${new Date().toISOString().slice(0, 10)}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+  }
+
+  // ── MOBILE SIDEBAR TOGGLE ── (mirrors script.js's setSidebarState pattern)
+  let adminSidebarTransitioning = false;
+  function setAdminSidebarOpen(isOpen){
+    const sidebar = document.getElementById('adminSidebar');
+    const toggle = document.getElementById('adminMobileMenuToggle');
+    const overlay = document.getElementById('adminSidebarOverlay');
+    if (!sidebar || adminSidebarTransitioning) return;
+    adminSidebarTransitioning = true;
+
+    sidebar.classList.toggle('active', isOpen);
+    if (toggle) toggle.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+    if (overlay) overlay.classList.toggle('active', isOpen);
+
+    window.setTimeout(() => { adminSidebarTransitioning = false; }, 320);
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    const toggle = document.getElementById('adminMobileMenuToggle');
+    const overlay = document.getElementById('adminSidebarOverlay');
+    const sidebar = document.getElementById('adminSidebar');
+
+    if (toggle && sidebar) {
+      toggle.addEventListener('click', () => {
+        setAdminSidebarOpen(!sidebar.classList.contains('active'));
+      });
+    }
+    if (overlay) {
+      overlay.addEventListener('click', () => setAdminSidebarOpen(false));
+    }
+    window.addEventListener('resize', () => {
+      if (window.matchMedia('(min-width: 769px)').matches) setAdminSidebarOpen(false);
+    });
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') setAdminSidebarOpen(false);
+    });
+  });
+
+  // ── TOAST ──
+  function showToast(msg,type='info'){
+    const t=document.getElementById('toast');
+    t.textContent=msg;t.className=`toast ${type} show`;
+    setTimeout(()=>t.classList.remove('show'),3200);
+  }
+
+  // ── DELETE MODAL ──
+  let pendingDelete=null;
+
+  function openDeleteModal(type, id, label) {
+    pendingDelete = { type, id };
+    document.getElementById('deleteModalMsg').textContent =
+      `"${label}" will be permanently deleted.`;
+    document.getElementById('deleteModal').classList.add('active');
+  }
+
+  function closeDeleteModal(){pendingDelete=null;document.getElementById('deleteModal').classList.remove('active');}
+
+  async function confirmDelete(){
+    if(!pendingDelete)return;
+    const{type,id}=pendingDelete;closeDeleteModal();
+    if(type==='building'){
+      try{
+        const res=await adminFetch(`/api/admin/buildings/${id}`,{method:'DELETE'});
+        const data=await res.json();
+        if(!res.ok||!data.ok)throw new Error(data.error||'Delete failed');
+        showToast('Building deleted','success');
+        loadBuildings();
+        loadStats();
+      }catch(err){showToast(err.message,'error');}
+      return;
+    }
+    if(type==='room'){
+      try{
+        const res=await adminFetch(`/api/admin/rooms/${id}`,{method:'DELETE'});
+        const data=await res.json();
+        if(!res.ok||!data.ok)throw new Error(data.error||'Delete failed');
+        showToast('Room deleted','success');
+        loadRooms();
+        loadStats();
+      }catch(err){showToast(err.message,'error');}
+      return;
+    }
+    if(type==='tree'){
+      try{
+        const res=await adminFetch(`/api/admin/trees/${id}`,{method:'DELETE'});
+        const data=await res.json();
+        if(!res.ok||!data.ok)throw new Error(data.error||'Delete failed');
+        showToast('Tree deleted','success');
+        loadTrees();
+      }catch(err){showToast(err.message,'error');}
+      return;
+    }
+    if(type==='announcement'){
+      try{
+        const res=await adminFetch(`/api/admin/announcements/${id}`,{method:'DELETE'});
+        const data=await res.json();
+        if(!res.ok||!data.ok)throw new Error(data.error||'Delete failed');
+        showToast('Deleted successfully','success');
+        loadAnnouncements(true); // background refresh — toast already gives feedback; avoids racing the SSE echo
+      }catch(err){showToast(err.message,'error');}
+      return;
+    }
+    if(type==='tip'){
+      try{
+        const res=await adminFetch(`/api/admin/campus-tips/${id}`,{method:'DELETE'});
+        const data=await res.json();
+        if(!res.ok||!data.ok)throw new Error(data.error||'Delete failed');
+        showToast('Tip deleted','success');
+        if(pendingTipEditId===id) cancelTipEdit(); // was editing the tip that just got deleted
+        loadCampusTips(true); // background refresh — toast already gives feedback; avoids racing the SSE echo
+      }catch(err){showToast(err.message,'error');}
+      return;
+    }
+  }
+  // ── STATS ──
+  async function loadStats(){
+    try{
+      const annRes = await fetch('/api/announcements');
+      const annData = await annRes.json();
+      const anns = annData.announcements || [];
+      const now = new Date();
+      const active = anns.filter(a => a.is_active && (!a.expires_at || new Date(a.expires_at) > now)).length;
+      document.getElementById('statActive').textContent = active;
+    }catch{}
+
+    try{
+      const usersRes = await adminFetch('/api/admin/stats/users');
+      const usersData = await usersRes.json();
+      document.getElementById('statUsers').textContent = usersData.total || 0;
+    }catch{}
+
+    const s = getSession();
+    const buildingsUrl = s?.userId ? `/api/buildings?userId=${encodeURIComponent(s.userId)}` : '/api/buildings';
+    const roomsUrl      = s?.userId ? `/api/rooms?userId=${encodeURIComponent(s.userId)}`     : '/api/rooms';
+
+    try{
+      const buildingsRes = await fetch(buildingsUrl);
+      const buildingsData = await buildingsRes.json();
+      document.getElementById('statBuildings').textContent = (buildingsData.buildings||[]).length || 0;
+    }catch{}
+
+    try{
+      const roomsRes = await fetch(roomsUrl);
+      const roomsData = await roomsRes.json();
+      document.getElementById('statRooms').textContent = (roomsData.rooms||[]).length || 0;
+    }catch{}
+
+    // ✅ ADD — one-shot initial value for the Overview total; the SSE stream
+    // (connectRealtimeStream) keeps it live afterward.
+    try{
+      const activeRes = await fetch('/api/active-users/count');
+      const activeData = await activeRes.json();
+      const el = document.getElementById('statActiveUsersNow');
+      if (el) el.textContent = activeData.total ?? 0;
+    }catch{}
+    }
+
+  // ── USERS ──
+  let allUsers = [];
+  let allPendingUsers = [];
+
+  let _pendingUsersRefreshPending = null;
+  async function loadPendingUsers(isBackgroundRefresh = false){
+    if (_pendingUsersRefreshPending) return _pendingUsersRefreshPending;
+    _pendingUsersRefreshPending = _loadPendingUsersInner(isBackgroundRefresh)
+      .finally(() => { _pendingUsersRefreshPending = null; });
+    return _pendingUsersRefreshPending;
+  }
+
+  async function _loadPendingUsersInner(isBackgroundRefresh){
+    const list = document.getElementById('pendingUsersList');
+    const badge = document.getElementById('pendingUsersBadge');
+    if (!isBackgroundRefresh && list) list.innerHTML = '<div class="loading-msg">Loading…</div>';
+    try {
+      const res = await adminFetch('/api/admin/users/pending');
+      const data = await res.json();
+      allPendingUsers = data.users || [];
+      if (badge) badge.textContent = allPendingUsers.length ? `${allPendingUsers.length} waiting` : '';
+
+      if (!allPendingUsers.length) {
+        if (list) list.innerHTML = '<div style="color:var(--muted);font-size:13px;">No accounts waiting for verification.</div>';
+        return;
+      }
+
+      if (list) list.innerHTML = allPendingUsers.map(u => `
+        <div style="display:flex;align-items:center;gap:12px;padding:12px;border:1px solid var(--border);border-radius:10px;background:#fafcfe;">
+          ${u.id_document
+            ? `<img src="${u.id_document}" alt="ID" onclick="previewId('${u.id_document.replace(/'/g, "\\'")}')"
+            style="width:64px;height:44px;object-fit:cover;border-radius:6px;cursor:pointer;border:1px solid var(--border);flex-shrink:0;">`
+            : `<div title="ID photo deleted — please check the visitor's ID in person" style="width:64px;height:44px;border-radius:6px;border:1px dashed var(--border);display:flex;align-items:center;justify-content:center;font-size:10px;color:var(--muted);text-align:center;flex-shrink:0;">No ID<br>photo</div>`}
+          <div style="flex:1;min-width:0;">
+            <div style="font-weight:700;font-size:13px;">${escHtml(u.full_name)}</div>
+            <div style="font-size:12px;color:var(--muted);">${escHtml(u.email)} · <span class="role-badge role-${(u.role||'').toLowerCase()}">${escHtml(u.role)}</span></div>
+            ${u.reactivation_requested_at ? `<span class="ev-request">🔁 Returning visitor — access requested again for today</span>` : ''}
+          </div>
+          <button class="icon-btn" title="Approve" onclick="approvePendingUser('${u.user_id}')" style="color:#16a34a;">✅</button>
+          <button class="icon-btn" title="Reject" onclick="rejectPendingUser('${u.user_id}')" style="color:#dc2626;">❌</button>
+        </div>
+      `).join('');
+    } catch (err) {
+      if (!isBackgroundRefresh && list) list.innerHTML = `<div style="color:#ef4444;font-size:13px;">Failed: ${err.message}</div>`;
+    }
+  }
+
+  function previewId(dataUrl) {
+    document.getElementById('idPreviewImage').src = dataUrl;
+    document.getElementById('idPreviewOverlay').style.display = 'flex';
+  }
+  function closeIdPreview() {
+    document.getElementById('idPreviewOverlay').style.display = 'none';
+  }
+
+  async function approvePendingUser(userId) {
+    try {
+      const res = await adminFetch(`/api/admin/users/${encodeURIComponent(userId)}/approve`, { method: 'PUT' });
+      const data = await res.json();
+      if (!res.ok || !data.ok) throw new Error(data.error || 'Approve failed');
+      showToast('Account approved!', 'success');
+      loadPendingUsers(true); // background refresh — avoids racing the SSE echo
+      loadUsers();
+    } catch (err) {
+      showToast(err.message, 'error');
+    }
+  }
+
+  async function rejectPendingUser(userId) {
+    try {
+      const res = await adminFetch(`/api/admin/users/${encodeURIComponent(userId)}/reject`, { method: 'PUT' });
+      const data = await res.json();
+      if (!res.ok || !data.ok) throw new Error(data.error || 'Reject failed');
+      showToast('Account rejected.', 'info');
+      loadPendingUsers(true); // background refresh — avoids racing the SSE echo
+      loadUsers();
+    } catch (err) {
+      showToast(err.message, 'error');
+    }
+  }
+
+  // ── EXPIRED VISITOR ACCOUNTS ──
+  function formatDateTimePH(ts){
+    if(!ts) return '—';
+    return new Date(ts).toLocaleString('en-PH',{timeZone:'Asia/Manila',month:'short',day:'numeric',year:'numeric',hour:'numeric',minute:'2-digit'});
+  }
+
+  async function loadExpiredVisitors(background = false){
+    const body=document.getElementById('expiredVisitorsTable');
+    const badge=document.getElementById('expiredVisitorsBadge');
+    if(!body) return;
+    if(!background) body.innerHTML='<tr><td colspan="7" class="loading-msg">Loading…</td></tr>';
+    try{
+      const res=await adminFetch('/api/admin/visitors/expired');
+      const data=await res.json();
+      if(!data.ok) throw new Error(data.error||'Failed to load expired visitors.');
+      const rows=data.visitors||[];
+      const requests=rows.filter(v=>v.reactivation_requested_at).length;
+      if(badge){
+        badge.textContent=rows.length
+          ? `${rows.length} expired${requests?` · ${requests} requesting reactivation`:''}`
+          : '';
+        badge.classList.toggle('ev-badge-alert', requests>0);
+      }
+      if(!rows.length){
+        body.innerHTML='<tr><td colspan="7" class="loading-msg">No expired visitor accounts.</td></tr>';
+        return;
+      }
+      const canReactivate=!!data.withinHours;
+      body.innerHTML=rows.map(v=>`
+        <tr>
+          <td>
+            <div style="font-weight:600;">${escHtml(v.full_name)}</div>
+            <code class="ev-id">${escHtml(v.user_id)}</code>
+            ${v.reactivation_requested_at?`<div><span class="ev-request">🔔 Requested reactivation · ${escHtml(formatDateTimePH(v.reactivation_requested_at))}</span></div>`:''}
+            ${v.verification_status==='pending'?`<div class="ev-sub">ID was not reviewed before expiry</div>`:''}
+          </td>
+          <td style="color:var(--muted)">${escHtml(v.email)}</td>
+          <td style="color:var(--muted);white-space:nowrap;">${escHtml(formatDateTimePH(v.created_at))}</td>
+          <td style="white-space:nowrap;">${escHtml(formatDateTimePH(v.access_expires_at))}</td>
+          <td>${v.visit_count||0}</td>
+          <td style="color:var(--muted);white-space:nowrap;">${escHtml(formatDateTimePH(v.last_visit_at))}</td>
+          <td>
+            <button class="btn btn-primary btn-sm" style="white-space:nowrap;" ${canReactivate?'':'disabled title="Reactivation is only available from 7:00 AM to 5:00 PM"'}
+              onclick="reactivateVisitor('${escHtml(v.user_id)}','${escHtml(v.full_name).replace(/'/g,"\\'")}')">↺ Reactivate</button>
+            ${v.has_id_document?'':'<div class="ev-sub">ID photo deleted</div>'}
+          </td>
+        </tr>`).join('');
+    }catch(err){
+      if(!background) body.innerHTML=`<tr><td colspan="7" class="loading-msg" style="color:#ef4444;">${escHtml(err.message)}</td></tr>`;
+    }
+  }
+
+  async function reactivateVisitor(userId, name){
+    if(!confirm(`Reactivate ${name}'s visitor account until 5:00 PM today?`)) return;
+    try{
+      const res=await adminFetch(`/api/admin/visitors/${encodeURIComponent(userId)}/reactivate`,{method:'PUT'});
+      const data=await res.json();
+      if(!res.ok||!data.ok) throw new Error(data.error||'Reactivation failed.');
+      showToast('Visitor account reactivated until 5:00 PM today.','success');
+      loadExpiredVisitors(true);
+      loadUsers();
+    }catch(err){
+      showToast(err.message,'error');
+    }
+  }
+
+  async function loadUsers(){
+    const tbody=document.getElementById('usersTable');
+    const overview=document.getElementById('overviewUserTable');
+    if(tbody)tbody.innerHTML='<tr><td colspan="5" class="loading-msg">Loading…</td></tr>';
+    if(overview)overview.innerHTML='<tr><td colspan="5" class="loading-msg">Loading…</td></tr>';
+    try{
+      const res=await adminFetch('/api/admin/users');
+      const data=await res.json();
+      allUsers=data.users||[];
+      filterUsers();
+      // Overview table always shows latest 8
+      if(overview)overview.innerHTML=allUsers.slice(0,8).map(u=>`
+        <tr>
+          <td><code style="font-size:11px;background:#f1f5f9;padding:2px 6px;border-radius:4px;">${escHtml(u.user_id)}</code></td>
+          <td>${escHtml(u.full_name)}</td>
+          <td style="color:var(--muted)">${escHtml(u.email)}</td>
+          <td><span class="role-badge role-${(u.role||'').toLowerCase()}">${escHtml(u.role)}</span></td>
+          <td style="color:var(--muted)">${u.created_at?new Date(u.created_at).toLocaleDateString():'-'}</td>
+        </tr>`).join('');
+    }catch(err){
+      const msg=`<tr><td colspan="5" class="loading-msg" style="color:#ef4444;">Failed: ${err.message}</td></tr>`;
+      if(tbody)tbody.innerHTML=msg;
+      if(overview)overview.innerHTML=msg;
+    }
+  }
+
+  function filterUsers(){
+    const tbody=document.getElementById('usersTable');
+    const search=(document.getElementById('userSearch')?.value||'').toLowerCase();
+    const role=document.getElementById('userRoleFilter')?.value||'';
+    const sort=document.getElementById('userSortFilter')?.value||'newest';
+    const badge=document.getElementById('userCountBadge');
+
+    // Expired Visitor accounts are listed separately (Expired Visitor Accounts).
+    const activeUsers=allUsers.filter(u=>!u.is_expired_visitor);
+    let filtered=[...activeUsers];
+
+    // Filter by search
+    if(search) filtered=filtered.filter(u=>
+      (u.full_name||'').toLowerCase().includes(search)||
+      (u.email||'').toLowerCase().includes(search)
+    );
+
+    // Filter by role
+    if(role) filtered=filtered.filter(u=>(u.role||'')===role);
+
+    // Sort
+    filtered.sort((a,b)=>{
+      const da=new Date(a.created_at||0);
+      const db=new Date(b.created_at||0);
+      return sort==='newest'?db-da:da-db;
+    });
+
+    // Update badge
+    if(badge) badge.textContent=role||search
+      ?`${filtered.length} of ${activeUsers.length} users`
+      :`${activeUsers.length} users total`;
+
+    if(!filtered.length){
+      tbody.innerHTML='<tr><td colspan="5" class="loading-msg">No users found.</td></tr>';
+      return;
+    }
+
+    tbody.innerHTML=filtered.map(u=>`
+      <tr>
+        <td><code style="font-size:11px;background:#f1f5f9;padding:2px 6px;border-radius:4px;">${escHtml(u.user_id)}</code></td>
+        <td>${escHtml(u.full_name)}</td>
+        <td style="color:var(--muted)">${escHtml(u.email)}</td>
+        <td><span class="role-badge role-${(u.role||'').toLowerCase()}">${escHtml(u.role)}</span></td>
+        <td style="color:var(--muted)">${u.created_at?new Date(u.created_at).toLocaleDateString():'-'}</td>
+      </tr>`).join('');
+  }
+
+  // ── ANNOUNCEMENTS ──
+  // Schedules a precise re-check for exactly when the soonest-expiring
+  // approved announcement is due to expire — so the EXPIRED badge (and the
+  // Active Alerts stat) update the moment it happens, not on the next
+  // manual refresh or unrelated SSE event.
+  function scheduleNextAnnouncementExpiration(anns) {
+      if (window._nextAnnExpirationTimeout) {
+          clearTimeout(window._nextAnnExpirationTimeout);
+          window._nextAnnExpirationTimeout = null;
+      }
+
+      const upcoming = (anns || [])
+          .filter(a => a.expires_at && a.status !== 'rejected')
+          .map(a => new Date(a.expires_at).getTime())
+          .filter(t => t > Date.now());
+
+      if (!upcoming.length) return;
+
+      const soonest = Math.min(...upcoming);
+      const delay = Math.min(soonest - Date.now() + 250, 2147483000);
+
+      window._nextAnnExpirationTimeout = setTimeout(() => {
+          loadAnnouncements(true); // background refresh — no loading flash
+      }, delay);
+  }
+
+  // ✅ isBackgroundRefresh=true skips the "Loading…" placeholder swap.
+  // Automatic re-checks (the precise expiration timer, the
+  // 'announcementsChanged' SSE event, and the visibilitychange listener)
+  // all run with no user action involved — blanking the whole list to a
+  // loading state and then repopulating it caused a visible flash/glitch
+  // every time an announcement expired. A true first load (annList still
+  // showing its initial "Loading announcements…" markup from the HTML, or
+  // an explicit manual call) still shows the placeholder as before.
+  // ✅ Single-flight guard: posting, approving, rejecting, or deleting an
+  // announcement calls loadAnnouncements() directly in its own success
+  // handler AND triggers the server's 'announcementsChanged' SSE broadcast
+  // (sent to every open tab, including this one), which calls
+  // loadAnnouncements() again moments later. Without coalescing, those two
+  // calls raced as two overlapping fetch+render cycles — the visible
+  // "table glitch" right after posting or deleting. If a refresh is already
+  // in flight, later callers just await that same result instead of
+  // starting a second one.
+  let _announcementsRefreshPending = null;
+  async function loadAnnouncements(isBackgroundRefresh = false){
+    if (_announcementsRefreshPending) return _announcementsRefreshPending;
+    _announcementsRefreshPending = _loadAnnouncementsInner(isBackgroundRefresh)
+      .finally(() => { _announcementsRefreshPending = null; });
+    return _announcementsRefreshPending;
+  }
+
+  async function _loadAnnouncementsInner(isBackgroundRefresh){
+    const list=document.getElementById('annList');
+    if(!isBackgroundRefresh){
+      list.innerHTML='<div class="loading-msg">Loading…</div>';
+    }
+    try{
+      const res=await adminFetch('/api/admin/announcements'); // was '/api/announcements'
+      const data=await res.json();
+      const anns=data.announcements||[];
+      if(!anns.length){
+        list.innerHTML='<div class="empty-state"><span class="emoji">📭</span>No announcements yet.</div>';
+        scheduleNextAnnouncementExpiration(anns);
+        return;
+      }
+      const now=new Date();
+      list.innerHTML=anns.map(a=>{
+        const expired=a.expires_at&&new Date(a.expires_at)<now;
+        const badgeClass={info:'badge-info',warning:'badge-warning',emergency:'badge-emergency'}[a.type]||'badge-info';
+        const typeLabel={info:'📢 Info',warning:'⚠️ Warning',emergency:'🚨 Emergency'}[a.type]||a.type;
+        const statusBadge = a.status === 'pending'
+          ? `<span class="item-badge" style="background:#fef3c7;color:#92400e;">⏳ PENDING</span>`
+          : a.status === 'rejected'
+          ? `<span class="item-badge" style="background:#fee2e2;color:#991b1b;">REJECTED</span>`
+          : '';
+        return`<div class="item-card" style="${expired?'opacity:0.5;':''}">
+          <span class="item-badge ${badgeClass}">${typeLabel}</span>
+          ${statusBadge}
+          <div class="item-body">
+            <div class="item-title">${escHtml(a.message)}</div>
+            <div class="item-meta">
+              <span>${new Date(a.created_at).toLocaleString()}</span>
+              ${a.created_by?`<span>· by ${escHtml(a.created_by)}</span>`:''}
+              ${a.expires_at?`<span>· Expires ${new Date(a.expires_at).toLocaleString()}</span>`:''}
+              ${expired?'<span style="color:#ef4444;font-weight:700;">EXPIRED</span>':''}
+            </div>
+          </div>
+          <div class="item-actions">
+            ${a.status==='pending'?`
+              <button class="icon-btn" title="Approve" onclick="approveAnnouncement(${a.id})" style="color:#16a34a;">✅</button>
+              <button class="icon-btn" title="Reject" onclick="rejectAnnouncement(${a.id})" style="color:#dc2626;">❌</button>
+            `:''}
+            <button class="icon-btn delete" title="Delete" onclick="openDeleteModal('announcement',${a.id},this.dataset.label)" data-label="${escHtml(a.message)}">🗑️</button>
+          </div>
+        </div>`;
+      }).join('');
+      loadStats();
+      scheduleNextAnnouncementExpiration(anns); // ✅ ADD
+    }catch(err){list.innerHTML=`<div class="loading-msg" style="color:#ef4444;">Failed: ${err.message}</div>`;}
+  }
+
+  async function approveAnnouncement(id){
+    try{
+      const res=await adminFetch(`/api/admin/announcements/${id}/approve`,{method:'PUT'});
+      const data=await res.json();
+      if(!res.ok||!data.ok)throw new Error(data.error||'Approve failed');
+      showToast('Announcement approved!','success');
+      loadAnnouncements(true); // background refresh — toast already gives feedback; avoids racing the SSE echo
+    }catch(err){showToast(err.message,'error');}
+  }
+
+  async function rejectAnnouncement(id){
+    try{
+      const res=await adminFetch(`/api/admin/announcements/${id}/reject`,{method:'PUT'});
+      const data=await res.json();
+      if(!res.ok||!data.ok)throw new Error(data.error||'Reject failed');
+      showToast('Announcement rejected.','info');
+      loadAnnouncements(true); // background refresh — toast already gives feedback; avoids racing the SSE echo
+    }catch(err){showToast(err.message,'error');}
+  }
+
+  async function postAnnouncement(){
+    const message=document.getElementById('annMessage').value.trim();
+    const type=document.getElementById('annType').value;
+    const expires=document.getElementById('annExpires').value;
+    if(!message){showToast('Please enter a message','error');return;}
+    const s = getSession();
+    const btn=document.getElementById('btnPostAnn');
+    btn.disabled=true;btn.textContent='Posting…';
+    try{
+      const res=await adminFetch('/api/admin/announcements',{
+        method:'POST',
+        body:JSON.stringify({
+          message, type,
+          expires_at: expires ? new Date(expires).toISOString() : null
+        })
+      });
+      const data=await res.json();
+      if(!res.ok||!data.ok)throw new Error(data.error||'Post failed');
+      showToast('Announcement posted!','success');clearAnnForm();loadAnnouncements(true); // background refresh — avoids racing the SSE echo
+    }catch(err){showToast(err.message,'error');}
+    finally{btn.disabled=false;btn.innerHTML='📢 Post Announcement';}
+  }
+
+  function clearAnnForm(){
+    document.getElementById('annMessage').value='';
+    document.getElementById('annType').value='info';
+    document.getElementById('annExpires').value='';
+    updateAnnPlaceholder()
+  }
+
+  // ── CAMPUS TIPS ──
+  // Same single-flight + background-refresh pattern as loadAnnouncements(),
+  // so posting/editing/deleting a tip and the resulting SSE echo don't race
+  // and cause a visible list "flash".
+  let _tipsRefreshPending = null;
+  async function loadCampusTips(isBackgroundRefresh = false){
+    if (_tipsRefreshPending) return _tipsRefreshPending;
+    _tipsRefreshPending = _loadCampusTipsInner(isBackgroundRefresh)
+      .finally(() => { _tipsRefreshPending = null; });
+    return _tipsRefreshPending;
+  }
+
+  async function _loadCampusTipsInner(isBackgroundRefresh){
+    const list=document.getElementById('tipsList');
+    if(!isBackgroundRefresh){
+      list.innerHTML='<div class="loading-msg">Loading…</div>';
+    }
+    try{
+      const res=await adminFetch('/api/admin/campus-tips');
+      const data=await res.json();
+      const tips=data.tips||[];
+      if(!tips.length){
+        list.innerHTML='<div class="empty-state"><span class="emoji">💡</span>No tips yet.</div>';
+        return;
+      }
+      list.innerHTML=tips.map(t=>`<div class="item-card">
+        <span class="item-badge badge-info">💡 TIP</span>
+        <div class="item-body">
+          <div class="item-title">${escHtml(t.content)}</div>
+          <div class="item-meta">
+            <span>${new Date(t.created_at).toLocaleString()}</span>
+            ${t.created_by?`<span>· by ${escHtml(t.created_by)}</span>`:''}
+          </div>
+        </div>
+        <div class="item-actions">
+          <button class="icon-btn" title="Edit" onclick="openEditTip(${t.id})" data-content="${escHtml(t.content)}">✏️</button>
+          <button class="icon-btn delete" title="Delete" onclick="openDeleteModal('tip',${t.id},this.dataset.label)" data-label="${escHtml(t.content)}">🗑️</button>
+        </div>
+      </div>`).join('');
+    }catch(err){list.innerHTML=`<div class="loading-msg" style="color:#ef4444;">Failed: ${err.message}</div>`;}
+  }
+
+  // null = posting a new tip; a numeric id = editing that existing tip.
+  let pendingTipEditId = null;
+
+  function openEditTip(id){
+    const btn = document.querySelector(`#tipsList button[onclick="openEditTip(${id})"]`);
+    const content = btn?.dataset.content || '';
+    pendingTipEditId = id;
+    document.getElementById('tipContent').value = content;
+    document.getElementById('tipFormTitle').textContent = 'Edit Campus Tip';
+    document.getElementById('btnPostTip').innerHTML = 'Save Changes';
+    document.getElementById('btnCancelTipEdit').style.display = '';
+    document.getElementById('tipContent').focus();
+  }
+
+  function cancelTipEdit(){
+    pendingTipEditId = null;
+    document.getElementById('tipContent').value = '';
+    document.getElementById('tipFormTitle').textContent = 'Post Campus Tip';
+    document.getElementById('btnPostTip').innerHTML = '💡 Post Tip';
+    document.getElementById('btnCancelTipEdit').style.display = 'none';
+  }
+
+  function clearTipForm(){
+    // Clearing while editing just wipes the text field, same as Cancel does
+    // for the rest of the form state — it does not create a duplicate tip
+    // and does not exit edit mode by itself.
+    document.getElementById('tipContent').value = '';
+  }
+
+  async function postCampusTip(){
+    const content=document.getElementById('tipContent').value.trim();
+    if(!content){showToast('Please enter tip content','error');return;}
+    const btn=document.getElementById('btnPostTip');
+    const editingId = pendingTipEditId;
+    btn.disabled=true; btn.textContent = editingId ? 'Saving…' : 'Posting…';
+    try{
+      const res = editingId
+        ? await adminFetch(`/api/admin/campus-tips/${editingId}`,{method:'PUT',body:JSON.stringify({content})})
+        : await adminFetch('/api/admin/campus-tips',{method:'POST',body:JSON.stringify({content})});
+      const data=await res.json();
+      if(!res.ok||!data.ok)throw new Error(data.error||'Save failed');
+      showToast(editingId ? 'Tip updated!' : 'Tip posted!','success');
+      cancelTipEdit();
+      loadCampusTips(true); // background refresh — avoids racing the SSE echo
+    }catch(err){showToast(err.message,'error');}
+    finally{
+      btn.disabled=false;
+      btn.innerHTML = pendingTipEditId ? 'Save Changes' : '💡 Post Tip';
+    }
+  }
+
+  const ANN_TYPE_PLACEHOLDERS = {
+    info: 'e.g. The university library will be open from 7:00 AM to 8:00 PM starting next Monday.',
+    warning: 'e.g. Please exercise caution when moving around the campus due to continuous heavy rainfall and slippery walkways.',
+    emergency: 'e.g. A fire has been reported near the Engineering Building. Please evacuate immediately and proceed to the designated evacuation area.'
+  };
+
+  function updateAnnPlaceholder() {
+    const type = document.getElementById('annType').value;
+    document.getElementById('annMessage').placeholder =
+      ANN_TYPE_PLACEHOLDERS[type] || ANN_TYPE_PLACEHOLDERS.info;
+  }
+
+  let editingRoomIndex = null;
+  let roomPickerMap = null;
+  let roomPickerMarker = null;
+  let currentRoomBuildingShortName = null;
+
+  function toggleRoomMapPicker() {
+    const container = document.getElementById('roomMapPicker');
+    const isVisible = container.style.display === 'block';
+    if (isVisible) {
+      container.style.display = 'none';
+      if (roomPickerMap) {
+        container.querySelector('.picker-view-toggle')?.remove();
+        roomPickerMap.remove();
+        roomPickerMap = null;
+        roomPickerMarker = null;
+        roomPickerFootprintLayer = null;
+      }
+    } else {
+      container.style.display = 'block';
+      setTimeout(() => initRoomMapPicker(), 100);
+    }
+  }
+
+  // ── Shared Default / Satellite / 3D toggle for every admin map picker ──
+  // Same imagery source the main app uses. Default is ON at the start of
+  // every picker session (never remembers a prior Satellite selection);
+  // 3D is the ONLY mode that allows tilt — Default and Satellite are both
+  // locked flat (no pitch), matching the main map fix.
+  const ADMIN_PICKER_SAT_SOURCE = 'osm-satellite';
+  const ADMIN_PICKER_SAT_LAYER = 'tile-satellite-picker';
+
+  function addPickerSatelliteLayer(map) {
+    if (!map.getSource(ADMIN_PICKER_SAT_SOURCE)) {
+      map.addSource(ADMIN_PICKER_SAT_SOURCE, {
+        type: 'raster',
+        tiles: ['https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}'],
+        tileSize: 256,
+        maxzoom: 19,
+        attribution: '© Esri, Maxar, Earthstar Geographics'
+      });
+    }
+    if (!map.getLayer(ADMIN_PICKER_SAT_LAYER)) {
+      map.addLayer({
+        id: ADMIN_PICKER_SAT_LAYER,
+        type: 'raster',
+        source: ADMIN_PICKER_SAT_SOURCE,
+        layout: { visibility: 'visible' }
+      });
+    }
+  }
+
+  // 2D = no tilt, ever. 3D = tilt allowed. Nothing else changes pitch.
+  function setPickerTiltEnabled(map, enabled) {
+    if (enabled) {
+      map.setMaxPitch(60);
+      map.dragRotate.enable();
+      map.touchPitch.enable();
+      map.keyboard.enableRotation();
+    } else {
+      map.setPitch(0);
+      map.setBearing(0);
+      map.setMaxPitch(0);
+      map.dragRotate.disable();
+      map.touchPitch.disable();
+      map.keyboard.disableRotation();
+    }
+  }
+
+  // ✅ Tracks the active view mode per picker container (buildingMapPicker,
+  // roomMapPicker, treeMapPicker). Needed because setPickerViewMode() only
+  // hides footprint layers that already exist at the moment it runs — if a
+  // layer is added *later* (e.g. a deferred once('idle', ...) retry), it
+  // defaults to visible and setPickerViewMode never gets a chance to hide it.
+  const pickerViewModes = {};
+
+  function setPickerViewMode(map, containerId, mode) {
+    pickerViewModes[containerId] = mode;
+    const container = document.getElementById(containerId);
+    const bar = container && container.querySelector('.picker-view-toggle');
+    if (bar) {
+      bar.querySelectorAll('button').forEach(b => {
+        const active = b.dataset.mode === mode;
+        b.style.background = active ? '#2c5aa0' : 'transparent';
+        b.style.color = active ? '#fff' : '#334155';
+      });
+    }
+
+    const apply = () => {
+      if (map.getLayer(ADMIN_PICKER_SAT_LAYER)) {
+        map.setLayoutProperty(
+          ADMIN_PICKER_SAT_LAYER, 'visibility',
+          (mode === 'satellite' || mode === '3d') ? 'visible' : 'none'
+        );
+      }
+      if (mode === '3d') {
+        setPickerTiltEnabled(map, true);
+        map.easeTo({ pitch: 55, duration: 400 });
+      } else {
+        setPickerTiltEnabled(map, false); // also snaps pitch/bearing back to 0
+      }
+
+      // ✅ Hide all building footprint layers in Satellite view so the aerial
+      // imagery stays clean. Applies to all three pickers (Buildings, Rooms,
+      // Trees). Layers are shown again when switching to Default. The actual
+      // footprint data in the DB is never touched — only layer visibility.
+      const FOOTPRINT_PICKERS = ['buildingMapPicker', 'roomMapPicker', 'treeMapPicker'];
+      if (FOOTPRINT_PICKERS.includes(containerId)) {
+        const footprintLayers = [
+          'static-footprints-fill',
+          'static-footprints-outline',
+          'other-building-footprints-fill',
+          'other-building-footprints-outline',
+          'building-picker-footprint-fill',
+          'building-picker-footprint-outline',
+          'room-picker-footprints-fill',
+          'room-picker-footprints-outline',
+          'tree-map-footprints-fill',
+          'tree-map-footprints-outline',
+          'footprint-preview-fill',
+          'footprint-preview-outline'
+        ];
+        const footprintVisibility = mode === 'satellite' ? 'none' : 'visible';
+        footprintLayers.forEach(layerId => {
+          if (map.getLayer(layerId)) {
+            map.setLayoutProperty(layerId, 'visibility', footprintVisibility);
+          }
+        });
+      }
+
+      // ✅ Draw Footprint picker (Manage Buildings) gets its own rule: hide
+      // the static footprints (mirrors the main app's addBuildingFootprints
+      // output) and the other-saved-buildings context layer in Satellite
+      // view, same as the other pickers. Deliberately does NOT touch
+      // footprint-preview-fill/outline — that's the polygon currently being
+      // drawn, and it must stay visible over the aerial imagery, which is
+      // the whole point of drawing on Satellite view.
+      if (containerId === 'footprintMapPicker') {
+        const contextFootprintLayers = [
+          'static-footprints-fill',
+          'static-footprints-outline',
+          'other-building-footprints-fill',
+          'other-building-footprints-outline'
+        ];
+        const contextVisibility = mode === 'satellite' ? 'none' : 'visible';
+        contextFootprintLayers.forEach(layerId => {
+          if (map.getLayer(layerId)) {
+            map.setLayoutProperty(layerId, 'visibility', contextVisibility);
+          }
+        });
+      }
+    };
+
+    if (map.isStyleLoaded()) apply(); else map.once('load', apply);
+  }
+
+  // Builds the little Default/Satellite/3D button bar and overlays it on
+  // the picker's own map container — no extra HTML needed anywhere.
+  function attachPickerViewToggle(map, containerId) {
+    const container = document.getElementById(containerId);
+    if (!container || container.querySelector('.picker-view-toggle')) return;
+    container.style.position = 'relative';
+
+    const bar = document.createElement('div');
+    bar.className = 'picker-view-toggle';
+    bar.style.cssText = `
+      position:absolute; top:8px; left:8px; z-index:5;
+      display:flex; gap:4px; background:rgba(255,255,255,0.92);
+      padding:4px; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.15);
+    `;
+
+    [
+      { key: 'default', label: '🗺️ Default' },
+      { key: 'satellite', label: '🛰️ Satellite' }
+    ].forEach(m => {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.textContent = m.label;
+      btn.dataset.mode = m.key;
+      btn.style.cssText = `
+        border:none; border-radius:6px; padding:5px 9px; font-size:11px;
+        font-weight:700; cursor:pointer; background:transparent; color:#334155;
+      `;
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation(); // don't let this register as a map click (pin/point placement)
+        setPickerViewMode(map, containerId, m.key);
+      });
+      bar.appendChild(btn);
+    });
+
+    container.appendChild(bar);
+    setPickerViewMode(map, containerId, 'default'); // ✅ Default view every time a picker session opens
+  }
+
+  function initRoomMapPicker() {
+    if (roomPickerMap) { roomPickerMap.resize(); syncRoomPickerFootprint(); return; }
+
+    roomPickerMap = new maplibregl.Map({
+      container: 'roomMapPicker',
+      style: {
+        version: 8,
+        sources: {
+          'osm': {
+            type: 'raster',
+            tiles: ['https://a.tile.openstreetmap.org/{z}/{x}/{y}.png'],
+            tileSize: 256,
+            attribution: '© OpenStreetMap'
+          }
+        },
+        layers: [{ id: 'osm-tiles', type: 'raster', source: 'osm' }]
+      },
+      center: [119.98388, 15.31846], // MapLibre wants [lng, lat]
+      zoom: 16,
+      pitch: 0,
+      bearing: 0,
+      pitchWithRotate: false,
+      touchPitch: false
+    });
+
+    roomPickerMap.on('load', () => {
+      addPickerSatelliteLayer(roomPickerMap);
+      drawStaticFootprints(roomPickerMap);
+      syncRoomPickerFootprint(); // ← show the selected building's outline immediately
+      // ✅ Must run last so setPickerViewMode('satellite') can immediately
+      // hide footprint layers that are already in the map.
+      attachPickerViewToggle(roomPickerMap, 'roomMapPicker');
+    });
+
+    const lat = parseFloat(document.getElementById('roomLat').value);
+    const lng = parseFloat(document.getElementById('roomLng').value);
+    if (lat && lng) placeRoomPin(lat, lng);
+
+    roomPickerMap.on('click', function(e) { placeRoomPin(e.lngLat.lat, e.lngLat.lng); });
+  }
+
+  function placeRoomPin(lat, lng) {
+    if (roomPickerMarker) roomPickerMarker.remove();
+    roomPickerMarker = new maplibregl.Marker({ draggable: true })
+      .setLngLat([lng, lat])
+      .addTo(roomPickerMap);
+
+    roomPickerMarker.on('dragend', function() {
+      const pos = roomPickerMarker.getLngLat();
+      setRoomCoords(pos.lat, pos.lng);
+    });
+
+    setRoomCoords(lat, lng);
+    roomPickerMap.setCenter([lng, lat]);
+    roomPickerMap.setZoom(20);
+  }
+
+  function setRoomCoords(lat, lng) {
+    const rLat = parseFloat(lat.toFixed(6));
+    const rLng = parseFloat(lng.toFixed(6));
+    document.getElementById('roomLat').value = rLat;
+    document.getElementById('roomLng').value = rLng;
+    document.getElementById('coordsDisplay').textContent =
+      `📍 Pinned at: ${rLat}, ${rLng} (drag pin to adjust)`;
+  }
+
+  function openAddRoom() {
+    const formWrap = document.getElementById('roomFormWrap');
+    if (formWrap.style.display === 'flex') {
+      cancelRoomEdit();
+      return;
+    }
+
+    editingRoomIndex = null;
+    currentRoomBuildingShortName = null;
+    ['roomName','roomBuilding','roomInstructor','roomLat','roomLng']
+      .forEach(id => document.getElementById(id).value = '');
+    document.getElementById('roomFloor').value = 'Ground Floor'; // ← added: sensible default for the dropdown
+    document.getElementById('coordsDisplay').textContent = 'No location pinned yet.';
+    document.getElementById('btnSaveRoom').innerHTML = '➕ Add Room';
+    formWrap.style.display = 'flex';
+    if (roomPickerMap) { roomPickerMap.remove(); roomPickerMap = null; roomPickerMarker = null; }
+    roomPickerFootprintGroup = null;
+    document.getElementById('roomMapPicker').querySelector('.picker-view-toggle')?.remove();
+    document.getElementById('roomMapPicker').style.display = 'none';
+    document.getElementById('roomName').focus();
+  }
+
+  function openEditRoom(id, name, building, floor, instructor, lat, lng) {
+    editingRoomIndex = id;
+    currentRoomBuildingShortName = building;
+    document.getElementById('roomName').value = name;
+    document.getElementById('roomBuilding').value = building;
+
+    const validFloors = ['Ground Floor', '2nd Floor', '3rd Floor', '4th Floor'];
+    document.getElementById('roomFloor').value = validFloors.includes(floor) ? floor : 'Ground Floor'; // ← changed
+
+    document.getElementById('roomInstructor').value = instructor || '';
+    document.getElementById('roomLat').value = lat || '';
+    document.getElementById('roomLng').value = lng || '';
+    document.getElementById('coordsDisplay').textContent =
+      lat && lng ? `📍 Pinned at: ${lat}, ${lng}` : 'No location pinned yet.';
+    document.getElementById('btnSaveRoom').innerHTML = '💾 Save Changes';
+    document.getElementById('roomFormWrap').style.display = 'flex';
+
+    if (roomPickerMap) { roomPickerMap.remove(); roomPickerMap = null; roomPickerMarker = null; }
+    roomPickerFootprintGroup = null;
+    document.getElementById('roomMapPicker').querySelector('.picker-view-toggle')?.remove();
+    document.getElementById('roomMapPicker').style.display = 'none';
+    document.getElementById('roomName').focus();
+    document.getElementById('roomFormWrap').scrollIntoView({ behavior: 'smooth' });
+  }
+
+  function cancelRoomEdit() {
+    editingRoomIndex = null;
+    currentRoomBuildingShortName = null;
+    document.getElementById('roomFormWrap').style.display = 'none';
+    if (roomPickerMap) { roomPickerMap.remove(); roomPickerMap = null; roomPickerMarker = null; }
+    roomPickerFootprintGroup = null;
+    document.getElementById('roomMapPicker').querySelector('.picker-view-toggle')?.remove();
+    document.getElementById('roomMapPicker').style.display = 'none';
+  }
+
+  async function saveRoom() {
+    const name       = document.getElementById('roomName').value.trim();
+    const building   = document.getElementById('roomBuilding').value.trim();
+    const floor      = document.getElementById('roomFloor').value.trim() || '—';
+    const instructor = document.getElementById('roomInstructor').value.trim();
+    const lat        = parseFloat(document.getElementById('roomLat').value) || null;
+    const lng        = parseFloat(document.getElementById('roomLng').value) || null;
+    if (!name)     { showToast('Room name is required', 'error'); return; }
+    if (!building) { showToast('Please select a building', 'error'); return; }
+    const btn = document.getElementById('btnSaveRoom');
+    btn.disabled = true;
+    try {
+      const url    = editingRoomIndex !== null ? `/api/admin/rooms/${editingRoomIndex}` : '/api/admin/rooms';
+      const method = editingRoomIndex !== null ? 'PUT' : 'POST';
+      const res  = await adminFetch(url, {
+        method,
+        body: JSON.stringify({ building, name, floor, instructor: instructor || null, lat, lng })
+      });
+      const data = await res.json();
+      if (!res.ok || !data.ok) throw new Error(data.error || 'Save failed');
+      showToast(editingRoomIndex ? 'Room updated!' : 'Room added!', 'success');
+      cancelRoomEdit();
+      loadRooms();
+      loadStats();
+    } catch(err) { showToast(err.message, 'error'); }
+    finally { btn.disabled = false; }
+  }
+
+  function deleteRoom(id, name) {
+    openDeleteModal('room', id, name);
+  }
+
+  let allRooms = [];
+
+  async function loadRooms() {
+    const tbody = document.getElementById('roomsTable');
+    tbody.innerHTML = '<tr><td colspan="6" class="loading-msg">Loading…</td></tr>';
+    try {
+      const s = getSession();
+      const url = s?.userId ? `/api/rooms?userId=${encodeURIComponent(s.userId)}` : '/api/rooms';
+      const res  = await fetch(url);
+      const data = await res.json();
+      allRooms = data.rooms || [];
+      populateBuildingFilter();
+      filterRooms();
+    } catch(err) {
+      tbody.innerHTML = `<tr><td colspan="6" class="loading-msg" style="color:#ef4444;">Failed: ${err.message}</td></tr>`;
+    }
+  }
+
+  function filterRooms() {
+    const tbody = document.getElementById('roomsTable');
+    const filter = document.getElementById('roomBuildingFilter').value;
+    const search = (document.getElementById('roomSearch')?.value || '').toLowerCase();
+    const badge = document.getElementById('roomCountBadge');
+
+    const filtered = allRooms.filter(r =>
+      (!filter || r.building === filter) &&
+      (!search || r.name.toLowerCase().includes(search) || r.building.toLowerCase().includes(search))
+    );
+
+    if (badge) badge.textContent = filter || search
+      ? `${filtered.length} of ${allRooms.length} rooms`
+      : `${allRooms.length} rooms total`;
+
+    if (!filtered.length) {
+      tbody.innerHTML = '<tr><td colspan="6" class="loading-msg">No rooms found.</td></tr>';
+      return;
+    }
+
+    tbody.innerHTML = filtered.map(r => `<tr>
+      <td style="font-weight:600">🚪 ${escHtml(r.name)}</td>
+      <td><code style="font-size:11px;background:#f1f5f9;padding:2px 7px;border-radius:4px;">${escHtml(r.building)}</code></td>
+      <td style="color:var(--muted)">${escHtml(r.floor)}</td>
+      <td style="color:var(--muted);font-size:12px">${r.instructor ? '👨‍🏫 ' + escHtml(r.instructor) : '—'}</td>
+      <td style="color:var(--muted);font-size:12px">${r.lat && r.lng ? '📍 Pinned' : '—'}</td>
+      <td>
+        <div style="display:flex;gap:5px;">
+          <button class="icon-btn" title="Edit"
+            onclick="openEditRoom(${r.id},'${escHtml(r.name)}','${escHtml(r.building)}','${escHtml(r.floor)}','${escHtml(r.instructor||'')}',${r.lat||'null'},${r.lng||'null'})">✏️</button>
+          <button class="icon-btn delete" title="Delete"
+            onclick="deleteRoom(${r.id},'${escHtml(r.name)}')">🗑️</button>
+        </div>
+      </td>
+    </tr>`).join('');
+  }
+
+  function populateBuildingFilter() {
+    const sel = document.getElementById('roomBuildingFilter');
+    const current = sel.value;
+    while (sel.options.length > 1) sel.remove(1);
+
+    // Prefer the full buildings list so buildings with zero rooms still
+    // appear in the filter and in the Add Room "Building" dropdown.
+    const source = allBuildings.length
+      ? allBuildings.map(b => b.short_name)
+      : allRooms.map(r => r.building);
+    const names = [...new Set(source)].filter(Boolean).sort();
+
+    names.forEach(n => {
+      const o = document.createElement('option'); o.value = n; o.textContent = n; sel.appendChild(o);
+    });
+    sel.value = current;
+
+    const bSel = document.getElementById('roomBuilding');
+    bSel.innerHTML = '<option value="">Select building…</option>';
+    names.forEach(n => {
+      const o = document.createElement('option'); o.value = n; o.textContent = n; bSel.appendChild(o);
+    });
+  }
+
+  // ═══════════════════════════════════════════════════════════
+  // TREES
+  // ═══════════════════════════════════════════════════════════
+  let treeMap = null;
+  let treeMarkers = {};
+  let allTrees = [];
+  let currentTreePopup = null;
+
+  function loadTreesPage() {
+    if (!treeMap) {
+      initTreeMap();
+    } else {
+      treeMap.resize();
+      drawOtherBuildingFootprints(treeMap);
+      syncAllTreeFootprints();
+      // ✅ The tree map instance persists across tab visits (unlike the
+      // Buildings/Rooms pickers, which destroy and recreate their map on
+      // every open) — attachPickerViewToggle won't re-run here since the
+      // toggle bar already exists, so reset the mode explicitly instead.
+      setPickerViewMode(treeMap, 'treeMapPicker', 'default');
+    }
+    loadTrees();
+  }
+
+  function initTreeMap() {
+    treeMap = new maplibregl.Map({
+      container: 'treeMapPicker',
+      style: {
+        version: 8,
+        sources: {
+          osm: {
+            type: 'raster',
+            tiles: ['https://a.tile.openstreetmap.org/{z}/{x}/{y}.png'],
+            tileSize: 256,
+            attribution: '© OpenStreetMap'
+          }
+        },
+        layers: [{ id: 'osm-tiles', type: 'raster', source: 'osm' }]
+      },
+      center: [119.98388, 15.31846],
+      zoom: 16,
+      pitch: 0,
+      bearing: 0,
+      pitchWithRotate: false,
+      touchPitch: false
+    });
+
+    treeMap.on('load', () => {
+      addPickerSatelliteLayer(treeMap);
+      drawStaticFootprints(treeMap);
+      syncAllTreeFootprints();
+      drawOtherBuildingFootprints(treeMap);
+      // ✅ Must run last so setPickerViewMode('satellite') can immediately
+      // hide footprint layers that are already in the map.
+      attachPickerViewToggle(treeMap, 'treeMapPicker');
+    });
+    treeMap.on('click', (e) => addTreeAt(e.lngLat.lat, e.lngLat.lng));
+  }
+
+  // Shows every saved building footprint for spatial context while planting —
+  // same treatment the old picker gave, driven by this system's allBuildings
+  // data instead of a separate footprint list.
+  function syncAllTreeFootprints() {
+    if (!treeMap || !treeMap.isStyleLoaded()) return;
+    const footprintsToShow = allBuildings
+      .filter(b => Array.isArray(b.footprint) && b.footprint.length >= 3)
+      .map(b => b.footprint);
+
+    const featureCollection = {
+      type: 'FeatureCollection',
+      features: footprintsToShow.map(fp => {
+        const ordered = getOrderedFootprintPoints(fp);
+        const ring = ordered.map(([lat, lng]) => [lng, lat]);
+        if (ring.length && (ring[0][0] !== ring[ring.length - 1][0] || ring[0][1] !== ring[ring.length - 1][1])) {
+          ring.push(ring[0]);
+        }
+        return { type: 'Feature', properties: {}, geometry: { type: 'Polygon', coordinates: [ring] } };
+      })
+    };
+
+    if (treeMap.getSource('tree-map-footprints')) {
+      treeMap.getSource('tree-map-footprints').setData(featureCollection);
+    } else {
+      treeMap.addSource('tree-map-footprints', { type: 'geojson', data: featureCollection });
+      treeMap.addLayer({
+        id: 'tree-map-footprints-fill',
+        type: 'fill',
+        source: 'tree-map-footprints',
+        paint: { 'fill-color': '#d9d0c9', 'fill-opacity': 1 }
+      });
+      treeMap.addLayer({
+        id: 'tree-map-footprints-outline',
+        type: 'line',
+        source: 'tree-map-footprints',
+        paint: { 'line-color': '#af9e94', 'line-width': 1 }
+      });
+    }
+  }
+
+  async function loadTrees() {
+    const statusEl = document.getElementById('treeStatus');
+    try {
+      const res = await fetch('/api/trees');
+      const data = await res.json();
+      allTrees = data.trees || [];
+      populateTreeBuildingFilter();
+      renderTreeMarkers();
+    } catch (err) {
+      statusEl.textContent = `Failed to load trees: ${err.message}`;
+    }
+  }
+
+  function populateTreeBuildingFilter() {
+    const filterSel = document.getElementById('treeBuildingFilter');
+    const current = filterSel.value;
+    while (filterSel.options.length > 1) filterSel.remove(1);
+    allBuildings.slice().sort((a, b) => a.name.localeCompare(b.name)).forEach(b => {
+      const o = document.createElement('option'); o.value = b.id; o.textContent = b.name; filterSel.appendChild(o);
+    });
+    filterSel.value = current;
+  }
+
+  function filterTrees() {
+    renderTreeMarkers();
+  }
+
+  function renderTreeMarkers() {
+    Object.values(treeMarkers).forEach(m => m.remove());
+    treeMarkers = {};
+
+    const filter = document.getElementById('treeBuildingFilter').value;
+    const visible = filter
+      ? allTrees.filter(t => String(t.building_id) === String(filter))
+      : allTrees;
+
+    const statusEl = document.getElementById('treeStatus');
+    const badge = document.getElementById('treeCountBadge');
+    badge.textContent = filter
+      ? `${visible.length} of ${allTrees.length} trees`
+      : `${allTrees.length} trees`;
+    statusEl.textContent = `${visible.length} tree(s) shown. Click the map to add more.`;
+
+    visible.forEach(tree => {
+      const el = document.createElement('div');
+      el.style.cssText = 'width:14px;height:14px;border-radius:50%;background:#16a34a;border:2px solid white;box-shadow:0 1px 4px rgba(0,0,0,0.4);cursor:pointer;';
+      el.title = 'Drag to move, click to adjust';
+
+      const marker = new maplibregl.Marker({ element: el, draggable: true })
+        .setLngLat([tree.lng, tree.lat])
+        .addTo(treeMap);
+
+      marker.on('dragend', () => {
+        const pos = marker.getLngLat();
+        updateTreeField(tree.id, { lat: pos.lat, lng: pos.lng }, /*silent*/ true);
+      });
+
+      el.addEventListener('click', (e) => {
+        e.stopPropagation(); // don't let the map click handler plant a new tree here
+        if (currentTreePopup) currentTreePopup.remove();
+        currentTreePopup = new maplibregl.Popup({ offset: 14, closeButton: true })
+          .setLngLat([tree.lng, tree.lat])
+          .setHTML(buildTreePopupHTML(tree))
+          .addTo(treeMap);
+        populateTreePopupBuildingSelect(tree);
+      });
+
+      treeMarkers[tree.id] = marker;
+    });
+  }
+
+  function buildTreePopupHTML(tree) {
+    const trunk = Number(tree.trunk_height) || 1.6;
+    const canopyH = Number(tree.canopy_height) || 4.2;
+    const canopyR = Number(tree.canopy_radius) || 1.3;
+    return `
+      <div style="min-width:220px;font-family:'Sora',sans-serif;">
+        <div style="font-weight:700;font-size:13px;margin-bottom:8px;color:#0f3a52;">🌳 Tree #${tree.id}</div>
+
+        <label style="display:block;font-size:11px;font-weight:700;color:#64748b;margin-bottom:2px;">
+          Trunk height: <span id="trunkVal-${tree.id}">${trunk.toFixed(1)}m</span>
+        </label>
+        <input type="range" min="0.5" max="15" step="0.1" value="${trunk}"
+          oninput="document.getElementById('trunkVal-${tree.id}').textContent=this.value+'m'"
+          onchange="updateTreeField(${tree.id}, {trunk_height: parseFloat(this.value)})"
+          style="width:100%;margin-bottom:8px;">
+
+        <label style="display:block;font-size:11px;font-weight:700;color:#64748b;margin-bottom:2px;">
+          Canopy height: <span id="canopyHVal-${tree.id}">${canopyH.toFixed(1)}m</span>
+        </label>
+        <input type="range" min="1" max="25" step="0.1" value="${canopyH}"
+          oninput="document.getElementById('canopyHVal-${tree.id}').textContent=this.value+'m'"
+          onchange="updateTreeField(${tree.id}, {canopy_height: parseFloat(this.value)})"
+          style="width:100%;margin-bottom:8px;">
+
+        <label style="display:block;font-size:11px;font-weight:700;color:#64748b;margin-bottom:2px;">
+          Canopy width: <span id="canopyRVal-${tree.id}">${canopyR.toFixed(1)}m</span>
+        </label>
+        <input type="range" min="0.5" max="12" step="0.1" value="${canopyR}"
+          onchange="updateTreeField(${tree.id}, {canopy_radius: parseFloat(this.value)})"
+          oninput="document.getElementById('canopyRVal-${tree.id}').textContent=this.value+'m'"
+          style="width:100%;margin-bottom:8px;">
+
+        <label style="display:block;font-size:11px;font-weight:700;color:#64748b;margin-bottom:2px;">Building</label>
+        <select id="buildingSel-${tree.id}"
+          onchange="updateTreeField(${tree.id}, {building_id: this.value ? parseInt(this.value,10) : null})"
+          style="width:100%;font-size:12px;padding:5px 8px;border-radius:6px;border:1px solid #d1d5db;margin-bottom:10px;">
+          <option value="">Unlinked</option>
+        </select>
+
+        <button onclick="deleteTree(${tree.id})" style="width:100%;background:#dc2626;color:white;border:none;border-radius:6px;padding:6px;font-size:12px;font-weight:700;cursor:pointer;">🗑️ Remove tree</button>
+      </div>
+    `;
+  }
+
+  // Popups are HTML strings MapLibre parses into the DOM after the fact, so
+  // the building <select>'s options have to be filled in once the popup
+  // element actually exists — same reason it can't be inlined above.
+  function populateTreePopupBuildingSelect(tree) {
+    const sel = document.getElementById(`buildingSel-${tree.id}`);
+    if (!sel) return;
+    allBuildings.slice().sort((a, b) => a.name.localeCompare(b.name)).forEach(b => {
+      const o = document.createElement('option');
+      o.value = b.id;
+      o.textContent = b.name;
+      sel.appendChild(o);
+    });
+    sel.value = tree.building_id || '';
+  }
+
+  // Single source of truth for saving a tree edit. The current PUT endpoint
+  // overwrites every column on each call (it doesn't merge partial fields),
+  // so this always resends the tree's full current state with just the
+  // changed field(s) layered on top — instead of sending only what changed,
+  // which would reset the rest to server-side defaults.
+  async function updateTreeField(id, changes, silent) {
+    const tree = allTrees.find(t => t.id === id);
+    if (!tree) return;
+    const payload = {
+      lat: tree.lat,
+      lng: tree.lng,
+      building_id: tree.building_id || null,
+      trunk_height: tree.trunk_height,
+      canopy_height: tree.canopy_height,
+      canopy_radius: tree.canopy_radius,
+      ...changes
+    };
+    try {
+      const res = await adminFetch(`/api/admin/trees/${id}`, {
+        method: 'PUT',
+        body: JSON.stringify(payload)
+      });
+      const data = await res.json();
+      if (!res.ok || !data.ok) throw new Error(data.error || 'Failed to update tree');
+      Object.assign(tree, data.tree);
+      if (!silent) showToast('Tree updated', 'success');
+    } catch (err) {
+      showToast(err.message, 'error');
+      if (silent) renderTreeMarkers(); // snap the dragged marker back to server state
+    }
+  }
+
+  async function addTreeAt(lat, lng) {
+    try {
+      const res = await adminFetch('/api/admin/trees', {
+        method: 'POST',
+        body: JSON.stringify({ lat, lng })
+      });
+      const data = await res.json();
+      if (!res.ok || !data.ok) throw new Error(data.error || 'Failed to add tree');
+      allTrees.push(data.tree);
+      renderTreeMarkers();
+      showToast('Tree planted!', 'success');
+    } catch (err) {
+      showToast(err.message, 'error');
+    }
+  }
+
+  function deleteTree(id) {
+    if (currentTreePopup) { currentTreePopup.remove(); currentTreePopup = null; }
+    openDeleteModal('tree', id, `Tree #${id}`);
+  }
+
+  let footprintPickerMap = null;
+  let footprintPoints = []; // [[lat,lng], ...]
+  let footprintMarkers = [];
+
+  function toggleFootprintDrawer() {
+    const container = document.getElementById('footprintMapPicker');
+    const isVisible = container.style.display === 'block';
+    container.style.display = isVisible ? 'none' : 'block';
+    if (!isVisible) setTimeout(() => initFootprintPicker(), 100);
+  }
+
+  function initFootprintPicker() {
+  if (footprintPickerMap) {
+    footprintPickerMap.resize();
+    drawOtherBuildingFootprints(footprintPickerMap); // ✅ refresh context on reopen too
+    return;
+  }
+
+    footprintPickerMap = new maplibregl.Map({
+      container: 'footprintMapPicker',
+      style: {
+        version: 8,
+        sources: {
+          'osm': {
+            type: 'raster',
+            tiles: ['https://a.tile.openstreetmap.org/{z}/{x}/{y}.png'],
+            tileSize: 256,
+            attribution: '© OpenStreetMap'
+          }
+        },
+        layers: [{ id: 'osm-tiles', type: 'raster', source: 'osm' }]
+      },
+      center: [119.98388, 15.31846],
+      zoom: 18,
+      pitch: 0,
+      bearing: 0,
+      pitchWithRotate: false,
+      touchPitch: false
+    });
+
+  footprintPickerMap.on('load', () => {
+    addPickerSatelliteLayer(footprintPickerMap);
+    attachPickerViewToggle(footprintPickerMap, 'footprintMapPicker');
+    drawStaticFootprints(footprintPickerMap);
+    drawOtherBuildingFootprints(footprintPickerMap); // ✅ show previously-saved footprints as context
+    if (footprintPoints.length) redrawFootprint();
+  });
+
+    footprintPickerMap.on('click', (e) => {
+      footprintPoints.push([e.lngLat.lat, e.lngLat.lng]);
+      redrawFootprint();
+    });
+  }
+
+  // Click a placed vertex to remove it; ≥3 points forms a visible polygon preview.
+  function redrawFootprint() {
+    if (!footprintPickerMap || !footprintPickerMap.isStyleLoaded()) return;
+
+    footprintMarkers.forEach(m => m.remove());
+    footprintMarkers = [];
+
+    footprintPoints.forEach((pt, i) => {
+      const el = document.createElement('div');
+      el.style.cssText = `
+          width: 10px;
+          height: 10px;
+          border-radius: 50%;
+          background: #2c5aa0;
+          cursor: pointer;
+      `;
+      el.addEventListener('click', (e) => {
+          e.stopPropagation(); // don't let this also register as a new-point click on the map
+          footprintPoints.splice(i, 1);
+          redrawFootprint();
+      });
+
+      const marker = new maplibregl.Marker({ element: el })
+          .setLngLat([pt[1], pt[0]]) // pt is [lat, lng] — MapLibre wants [lng, lat]
+          .addTo(footprintPickerMap);
+      footprintMarkers.push(marker);
+    });
+
+    const polygonGeoJSON = { type: 'FeatureCollection', features: [] };
+    if (footprintPoints.length >= 3) {
+      const ordered = getOrderedFootprintPoints(footprintPoints);
+      const ring = ordered.map(([lat, lng]) => [lng, lat]);
+      if (ring.length && (ring[0][0] !== ring[ring.length - 1][0] || ring[0][1] !== ring[ring.length - 1][1])) {
+          ring.push(ring[0]); // close the ring
+      }
+      polygonGeoJSON.features.push({
+          type: 'Feature',
+          properties: {},
+          geometry: { type: 'Polygon', coordinates: [ring] }
+      });
+    }
+
+    // Empty FeatureCollection when < 3 points just renders nothing — replaces the old add/remove-layer dance
+    if (footprintPickerMap.getSource('footprint-preview')) {
+      footprintPickerMap.getSource('footprint-preview').setData(polygonGeoJSON);
+    } else {
+      footprintPickerMap.addSource('footprint-preview', { type: 'geojson', data: polygonGeoJSON });
+      footprintPickerMap.addLayer({
+          id: 'footprint-preview-fill',
+          type: 'fill',
+          source: 'footprint-preview',
+          paint: { 'fill-color': '#d9d0c9', 'fill-opacity': 1 }
+      });
+      footprintPickerMap.addLayer({
+          id: 'footprint-preview-outline',
+          type: 'line',
+          source: 'footprint-preview',
+          paint: { 'line-color': '#af9e94', 'line-width': 1 }
+      });
+    }
+
+    const statusEl = document.getElementById('footprintStatus');
+    statusEl.textContent =
+      footprintPoints.length === 0 ? 'No footprint drawn yet.'
+      : footprintPoints.length < 3 ? `${footprintPoints.length} point(s) placed — need at least 3 to form a shape.`
+      : `${footprintPoints.length}-point footprint drawn. Click a point to remove it.`;
+    statusEl.classList.toggle('set', footprintPoints.length >= 3);
+
+    syncBuildingPickerFootprint(); // ← keep the location-picker map in sync
+  }
+
+  function clearFootprint() {
+    footprintPoints = [];
+    redrawFootprint();
+  }
+
+  function undoFootprintPoint() {
+    if (footprintPoints.length === 0) {
+      showToast('No points to undo', 'info');
+      return;
+    }
+    footprintPoints.pop();
+    redrawFootprint();
+    showToast('Last point removed', 'info');
+  }
+
+  // ── BUILDING MAP PICKER ──
+  let buildingPickerMap = null;
+  let buildingPickerMarker = null;
+  let editingBuildingId = null;
+
+  function toggleBuildingMapPicker() {
+    const container = document.getElementById('buildingMapPicker');
+    const isVisible = container.style.display === 'block';
+    if (isVisible) {
+      // ✅ Always destroy the map on close instead of hiding it.
+      // Reusing a MapLibre instance after display:none causes the satellite
+      // layer toggle to stop working on the second open — the canvas
+      // re-renders but internal layer event wiring is lost. Destroying and
+      // recreating is cheap and guarantees a clean state every time.
+      container.style.display = 'none';
+      if (buildingPickerMap) {
+        // Remove the stale toggle bar so attachPickerViewToggle creates a
+        // fresh one with a valid map closure on the next open.
+        container.querySelector('.picker-view-toggle')?.remove();
+        buildingPickerMap.remove();
+        buildingPickerMap = null;
+        buildingPickerMarker = null;
+        buildingPickerFootprintLayer = null;
+      }
+    } else {
+      container.style.display = 'block';
+      setTimeout(() => initBuildingMapPicker(), 100);
+    }
+  }
+
+  function initBuildingMapPicker() {
+    if (buildingPickerMap) {
+      buildingPickerMap.resize();
+      drawOtherBuildingFootprints(buildingPickerMap); // ✅ refresh context on reopen too
+      syncBuildingPickerFootprint();
+      return;
+    }
+
+    buildingPickerMap = new maplibregl.Map({
+      container: 'buildingMapPicker',
+      style: {
+        version: 8,
+        sources: {
+          'osm': {
+            type: 'raster',
+            tiles: ['https://a.tile.openstreetmap.org/{z}/{x}/{y}.png'],
+            tileSize: 256,
+            attribution: '© OpenStreetMap'
+          }
+        },
+        layers: [{ id: 'osm-tiles', type: 'raster', source: 'osm' }]
+      },
+      center: [119.98388, 15.31846],
+      zoom: 16,
+      pitch: 0,
+      bearing: 0,
+      pitchWithRotate: false,
+      touchPitch: false
+    });
+
+  buildingPickerMap.on('load', () => {
+    addPickerSatelliteLayer(buildingPickerMap);
+    drawStaticFootprints(buildingPickerMap);
+    drawOtherBuildingFootprints(buildingPickerMap); // ✅ show previously-saved footprints as context
+    syncBuildingPickerFootprint(); // ← show any existing footprint immediately
+    // ✅ Must run last so setPickerViewMode('satellite') can immediately
+    // hide footprint layers that are already in the map.
+    attachPickerViewToggle(buildingPickerMap, 'buildingMapPicker');
+  });
+
+    const lat = parseFloat(document.getElementById('buildingLat').value);
+    const lng = parseFloat(document.getElementById('buildingLng').value);
+    if (lat && lng) placeBuildingPin(lat, lng);
+
+    buildingPickerMap.on('click', function(e) { placeBuildingPin(e.lngLat.lat, e.lngLat.lng); });
+  }
+
+  function placeBuildingPin(lat, lng) {
+    if (buildingPickerMarker) buildingPickerMarker.remove();
+    buildingPickerMarker = new maplibregl.Marker({ draggable: true })
+      .setLngLat([lng, lat])
+      .addTo(buildingPickerMap);
+
+    buildingPickerMarker.on('dragend', function() {
+      const pos = buildingPickerMarker.getLngLat();
+      setBuildingCoords(pos.lat, pos.lng);
+    });
+
+    setBuildingCoords(lat, lng);
+    buildingPickerMap.setCenter([lng, lat]);
+    buildingPickerMap.setZoom(19);
+  }
+
+  function setBuildingCoords(lat, lng) {
+    const rLat = parseFloat(lat.toFixed(6));
+    const rLng = parseFloat(lng.toFixed(6));
+    document.getElementById('buildingLat').value = rLat;
+    document.getElementById('buildingLng').value = rLng;
+    document.getElementById('buildingCoordsDisplay').textContent =
+      `📍 Pinned at: ${rLat}, ${rLng} (drag pin to adjust)`;
+    document.getElementById('buildingCoordsDisplay').classList.add('set');
+  }
+
+  function openAddBuilding() {
+    const formWrap = document.getElementById('buildingFormWrap');
+    if (formWrap.style.display === 'flex') {
+      cancelBuildingEdit();
+      return;
+    }
+
+    editingBuildingId = null;
+    ['buildingName','buildingShortName','buildingLat','buildingLng'].forEach(id => document.getElementById(id).value = '');
+    document.getElementById('buildingDescription').value = '';
+    document.getElementById('buildingType').value = 'department';
+    document.getElementById('buildingCoordsDisplay').textContent = 'No location pinned yet.';
+    footprintPoints = [];
+    document.getElementById('buildingFootprintHeight').value = 4;
+    document.getElementById('footprintStatus').textContent = 'No footprint drawn yet.';
+    document.getElementById('btnSaveBuilding').innerHTML = '➕ Add Building';
+    formWrap.style.display = 'flex';
+    if (buildingPickerMap) { buildingPickerMap.remove(); buildingPickerMap = null; buildingPickerMarker = null; }
+    buildingPickerFootprintLayer = null;
+    document.getElementById('buildingMapPicker').querySelector('.picker-view-toggle')?.remove();
+    document.getElementById('buildingMapPicker').style.display = 'none';
+    if (footprintPickerMap) { footprintPickerMap.remove(); footprintPickerMap = null; }
+    // ✅ Remove the stale toggle bar so the next "Draw Footprint" open gets a
+    // fresh bar wired to the new map instance and resets to Default view —
+    // same reasoning as the buildingMapPicker cleanup above.
+    document.getElementById('footprintMapPicker').querySelector('.picker-view-toggle')?.remove();
+    document.getElementById('footprintMapPicker').style.display = 'none';
+    document.getElementById('buildingName').focus();
+  }
+
+  function openEditBuilding(id) {
+    const b = allBuildings.find(x => x.id === id);
+    if (!b) return;
+    editingBuildingId = id;
+    document.getElementById('buildingName').value = b.name;
+    document.getElementById('buildingShortName').value = b.short_name;
+    document.getElementById('buildingDescription').value = b.description || '';
+    document.getElementById('buildingType').value = b.type || 'department';
+    document.getElementById('buildingLat').value = b.lat || '';
+    document.getElementById('buildingLng').value = b.lng || '';
+    document.getElementById('buildingCoordsDisplay').textContent =
+      b.lat && b.lng ? `📍 Pinned at: ${b.lat}, ${b.lng}` : 'No location pinned yet.';
+
+    footprintPoints = Array.isArray(b.footprint) ? b.footprint.map(p => [p[0], p[1]]) : [];
+    document.getElementById('buildingFootprintHeight').value = b.footprint_height != null ? b.footprint_height : 4;
+    document.getElementById('footprintStatus').textContent =
+      footprintPoints.length >= 3 ? `${footprintPoints.length}-point footprint saved. Click "Draw Footprint" to view/edit.` : 'No footprint drawn yet.';
+
+    document.getElementById('btnSaveBuilding').innerHTML = '💾 Save Changes';
+    document.getElementById('buildingFormWrap').style.display = 'flex';
+    if (buildingPickerMap) { buildingPickerMap.remove(); buildingPickerMap = null; buildingPickerMarker = null; }
+    buildingPickerFootprintLayer = null;
+    // ✅ This function was missing the toggle-bar cleanup that
+    // cancelBuildingEdit/openAddBuilding already do — add it here too so
+    // editing a building, then editing another, doesn't leave either
+    // picker stuck on Satellite with a dead switcher.
+    document.getElementById('buildingMapPicker').querySelector('.picker-view-toggle')?.remove();
+    document.getElementById('buildingMapPicker').style.display = 'none';
+    if (footprintPickerMap) { footprintPickerMap.remove(); footprintPickerMap = null; }
+    document.getElementById('footprintMapPicker').querySelector('.picker-view-toggle')?.remove();
+    document.getElementById('footprintMapPicker').style.display = 'none';
+    document.getElementById('buildingName').focus();
+    document.getElementById('buildingFormWrap').scrollIntoView({ behavior: 'smooth' });
+  }
+
+  function cancelBuildingEdit() {
+    editingBuildingId = null;
+    document.getElementById('buildingFormWrap').style.display = 'none';
+    if (buildingPickerMap) { buildingPickerMap.remove(); buildingPickerMap = null; buildingPickerMarker = null; }
+    buildingPickerFootprintLayer = null; // ← map instance is gone, so drop the stale reference
+    // ✅ Remove the stale toggle bar so attachPickerViewToggle creates a
+    // fresh one with a valid map closure the next time the picker opens.
+    // Without this, the old buttons remain in the DOM closured to the
+    // destroyed map instance, making Default/Satellite non-functional.
+    document.getElementById('buildingMapPicker').querySelector('.picker-view-toggle')?.remove();
+    document.getElementById('buildingMapPicker').style.display = 'none';
+    if (footprintPickerMap) { footprintPickerMap.remove(); footprintPickerMap = null; }
+    // ✅ Same fix as buildingMapPicker above: without removing this stale bar,
+    // attachPickerViewToggle sees it still in the DOM on the next "Draw
+    // Footprint" open and bails out early — so the fresh map never gets its
+    // view mode reset to Default, and the visible buttons stay wired to the
+    // destroyed map instance (switcher looks broken, view stuck on Satellite).
+    document.getElementById('footprintMapPicker').querySelector('.picker-view-toggle')?.remove();
+    document.getElementById('footprintMapPicker').style.display = 'none';
+    footprintPoints = [];
+  }
+
+  async function saveBuilding() {
+    const name        = document.getElementById('buildingName').value.trim();
+    const short_name   = document.getElementById('buildingShortName').value.trim();
+    const description  = document.getElementById('buildingDescription').value.trim();
+    const type         = document.getElementById('buildingType').value;
+    const lat          = parseFloat(document.getElementById('buildingLat').value) || null;
+    const lng          = parseFloat(document.getElementById('buildingLng').value) || null;
+    const footprint_height  = parseFloat(document.getElementById('buildingFootprintHeight').value);
+    if (!name)       { showToast('Building name is required', 'error'); return; }
+    if (!short_name) { showToast('Short name is required', 'error'); return; }
+    const btn = document.getElementById('btnSaveBuilding');
+    btn.disabled = true;
+    try {
+      const url    = editingBuildingId !== null ? `/api/admin/buildings/${editingBuildingId}` : '/api/admin/buildings';
+      const method = editingBuildingId !== null ? 'PUT' : 'POST';
+      const res    = await adminFetch(url, {
+        method,
+        body: JSON.stringify({
+          name, short_name, type, lat, lng, description,
+          footprint: footprintPoints.length >= 3 ? getOrderedFootprintPoints(footprintPoints) : null,
+          footprint_height: isNaN(footprint_height) ? 4 : footprint_height
+        })
+      });
+      const data = await res.json();
+      if (!res.ok || !data.ok) throw new Error(data.error || 'Save failed');
+      showToast(editingBuildingId ? 'Building updated!' : 'Building added!', 'success');
+      cancelBuildingEdit();
+      loadBuildings();
+      loadStats();
+    } catch(err) { showToast(err.message, 'error'); }
+    finally { btn.disabled = false; }
+  }
+
+  function deleteBuilding(id, name) {
+    openDeleteModal('building', id, name);
+  }
+
+  let allBuildings = [];
+
+  // ── CONSOLIDATED REAL-TIME STREAM (SSE) ──
+  // One shared connection for this tab, handling announcements, active-user
+  // presence, AND map data (buildings/rooms) together.
+  //
+  // ⚠️ This replaces what used to be THREE separate EventSource connections
+  // (announcements/stream, active-users/stream, map-data/stream). Browsers
+  // cap concurrent connections per origin at 6 (HTTP/1.1). With this Admin
+  // Dashboard tab open alongside a Main App tab — the natural way to test
+  // "does the Main App update live when I delete something here" — three
+  // streams each would total 6 permanently-open connections, saturating that
+  // limit. Whichever stream connected last (map-data) would silently queue
+  // and never actually deliver events, which is why room-deletion sync could
+  // appear to work sometimes and not others depending on how many tabs/
+  // streams happened to already be open. Multiplexing everything over one
+  // connection removes that ceiling entirely.
+  const ROLE_DISPLAY = [
+      { role: 'ADMIN',    icon: '🛡️', singular: 'Admin',    plural: 'Admins' },
+      { role: 'EMPLOYEE', icon: '🧑‍💼', singular: 'Employee', plural: 'Employees' },
+      { role: 'STUDENT',  icon: '🎓', singular: 'Student',   plural: 'Students' },
+      { role: 'VISITOR',  icon: '🚶', singular: 'Visitor',   plural: 'Visitors' }
+  ];
+
+  function renderActiveUsersList(byRole) {
+      const listEl = document.getElementById('activeUsersList');
+      if (!listEl) return;
+
+      const rows = ROLE_DISPLAY
+          .map(({ role, icon, singular, plural }) => {
+              const count = (byRole && byRole[role]) || 0;
+              return { icon, count, label: count === 1 ? singular : plural };
+          })
+          .filter(r => r.count > 0);
+
+      if (!rows.length) {
+          listEl.innerHTML = `<li style="color:var(--muted);">No one is currently online.</li>`;
+          return;
+      }
+
+      listEl.innerHTML = rows.map(r => `
+          <li style="display:flex;align-items:center;gap:8px;">
+              <span>${r.icon}</span>
+              <span style="font-weight:700;">${r.count}</span>
+              <span style="color:var(--muted);">${r.label}</span>
+          </li>
+      `).join('');
+  }
+
+  // One-shot fallback for the Users page's initial render — SSE (below)
+  // keeps it live afterward.
+  async function loadActiveUsersList(){
+      try{
+          const res = await fetch('/api/active-users/count');
+          const data = await res.json();
+          renderActiveUsersList(data.byRole);
+      }catch{}
+  }
+
+  let realtimeEventSource = null;
+  function connectRealtimeStream() {
+      if (realtimeEventSource) return; // already connected
+      const s = getSession();
+      const params = new URLSearchParams();
+      if (s?.userId) params.set('userId', s.userId);
+      if (s?.role) params.set('role', s.role);
+      const query = params.toString() ? `?${params.toString()}` : '';
+      try {
+          realtimeEventSource = new EventSource(`/api/realtime/stream${query}`);
+          realtimeEventSource.onmessage = (event) => {
+              try {
+                  const data = JSON.parse(event.data);
+                  switch (data.type) {
+                      case 'announcementsChanged':
+                          loadAnnouncements(true); // background refresh — already calls loadStats() internally
+                          break;
+                      case 'campusTipsChanged':
+                          loadCampusTips(true);
+                          break;
+                      case 'activeUsers': {
+                          // Update whichever of these is currently in the DOM — Overview's
+                          // total card, Manage → Users' role breakdown, or both (both
+                          // page-content divs exist in the DOM even when hidden, so this
+                          // keeps both fresh in the background regardless of which tab
+                          // is open when the update arrives).
+                          const totalEl = document.getElementById('statActiveUsersNow');
+                          if (totalEl) totalEl.textContent = data.total;
+                          renderActiveUsersList(data.byRole);
+                          break;
+                      }
+                      case 'mapDataChanged':
+                          loadBuildings();
+                          loadRooms();
+                          loadStats();
+                          break;
+                      case 'usersChanged':
+                          loadPendingUsers(true); // background refresh — no loading flash
+                          loadUsers();
+                          loadExpiredVisitors(true);
+                          break;
+                      case 'visitsChanged':
+                          // A visitor submitted a purpose or arrived — refresh quietly.
+                          loadVisitorVisits(true);
+                          break;
+                      // 'connected' / heartbeat comment frames: nothing to do.
+                  }
+              } catch { /* ignore malformed frames */ }
+          };
+          realtimeEventSource.onerror = () => {
+              // EventSource reconnects automatically — nothing else to do here.
+          };
+      } catch (e) {
+          console.warn('Could not open realtime stream:', e);
+      }
+      // ✅ ADD — safety net: announcement expiration is time-based, not a DB
+      // write, so this catches it even if no SSE event ever fires.
+      // Removed periodic polling — announcement expiration is now caught
+      // by the 'announcementsChanged' SSE event and the visibilitychange
+      // listener below, not by a timer.
+      // ✅ ADD — catches anything missed while this tab was backgrounded.
+      if (!window._announcementsVisibilityListenerAdded) {
+          window._announcementsVisibilityListenerAdded = true;
+          document.addEventListener('visibilitychange', () => {
+              if (document.visibilityState === 'visible') {
+                  loadAnnouncements(true); // background refresh — no loading flash
+                  loadPendingUsers(true); // background refresh — catches anything missed while backgrounded
+                  loadBuildings();
+                  loadRooms();
+                  loadStats();
+              }
+          });
+      }
+  }
+
+  async function loadBuildings() {
+    const tbody = document.getElementById('buildingsTable');
+    tbody.innerHTML = '<tr><td colspan="6" class="loading-msg">Loading…</td></tr>';
+    try {
+      const s = getSession();
+      const url = s?.userId ? `/api/buildings?userId=${encodeURIComponent(s.userId)}` : '/api/buildings';
+      const res  = await fetch(url);
+      const data = await res.json();
+      allBuildings = data.buildings || [];
+      populateBuildingFilter()
+      filterBuildings();
+    } catch(err) {
+      tbody.innerHTML = `<tr><td colspan="6" class="loading-msg" style="color:#ef4444;">Failed: ${err.message}</td></tr>`;
+    }
+  }
+
+  function filterBuildings() {
+    const tbody = document.getElementById('buildingsTable');
+    const filter = document.getElementById('buildingTypeFilter').value;
+    const search = (document.getElementById('buildingSearch')?.value || '').toLowerCase();
+    const badge = document.getElementById('buildingCountBadge');
+    const typeColors = {
+      department:     '#34a853;color:#dce8f7',
+      administration: '#2c5aa0;color:#dce8f7',
+      facilities:     '#fbbc04;color:#dce8f7',
+      office:         '#ea4335;color:#dce8f7',
+      landmark:       '#9c27b0;color:#dce8f7'
+    };
+
+    const filtered = allBuildings.filter(b =>
+      (!filter || b.type === filter) &&
+      (!search || b.name.toLowerCase().includes(search) || b.short_name.toLowerCase().includes(search))
+    );
+
+    if (badge) badge.textContent = filter || search
+      ? `${filtered.length} of ${allBuildings.length} buildings`
+      : `${allBuildings.length} buildings total`;
+
+    if (!filtered.length) {
+      tbody.innerHTML = '<tr><td colspan="6" class="loading-msg">No buildings found.</td></tr>';
+      return;
+    }
+
+    tbody.innerHTML = filtered.map((b, i) => {
+      const tc = typeColors[b.type] || '#f1f5f9;color:#64748b';
+      return `<tr>
+        <td style="color:var(--muted)">${i + 1}</td>
+        <td style="font-weight:600">${escHtml(b.name)}</td>
+        <td><code style="font-size:11px;background:#f1f5f9;padding:2px 7px;border-radius:4px;">${escHtml(b.short_name)}</code></td>
+        <td><span style="display:inline-block;padding:2px 9px;border-radius:999px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.4px;background:${tc}">${escHtml(b.type)}</span></td>
+        <td style="color:var(--muted);font-size:12px">${b.lat && b.lng ? '📍 Pinned' : '—'}</td>
+        <td>
+          <div style="display:flex;gap:5px;">
+            <button class="icon-btn" title="Edit" onclick="openEditBuilding(${b.id})">✏️</button>
+            <button class="icon-btn delete" title="Delete"
+              onclick="deleteBuilding(${b.id},'${escHtml(b.name)}')">🗑️</button>
+          </div>
+        </td>
+      </tr>`;
+    }).join('');
+  }
+
+  // Reorders points by angle around their centroid so a polygon always
+  // renders correctly regardless of the order the user clicked them in.
+  // This prevents the "bowtie" self-intersection shape from out-of-sequence
+  // clicks (e.g. clicking corners 1→3→2→4 instead of 1→2→3→4).
+  function getOrderedFootprintPoints(points) {
+    if (points.length < 3) return points;
+
+    const cx = points.reduce((sum, p) => sum + p[0], 0) / points.length;
+    const cy = points.reduce((sum, p) => sum + p[1], 0) / points.length;
+
+    return [...points].sort((a, b) => {
+      const angleA = Math.atan2(a[1] - cy, a[0] - cx);
+      const angleB = Math.atan2(b[1] - cy, b[0] - cx);
+      return angleA - angleB;
+    });
+  }
+
+  let buildingPickerFootprintLayer = null; // tracks the footprint polygon shown in the Open Map Picker
+
+  // Draws (or refreshes) the current footprint polygon on the building lat/lng
+  // picker map, so both map views always reflect the same geometry without
+  // needing to draw the shape twice.
+  function syncBuildingPickerFootprint() {
+    if (!buildingPickerMap) return;
+    // isStyleLoaded() can still report false for a moment right after 'load'
+    // fires (it also waits on tile/source settling) — retry once instead of
+    // silently dropping the sync.
+    if (!buildingPickerMap.isStyleLoaded()) {
+      buildingPickerMap.once('idle', syncBuildingPickerFootprint);
+      return;
+    }
+
+    const featureCollection = { type: 'FeatureCollection', features: [] };
+    if (footprintPoints.length >= 3) {
+      const ordered = getOrderedFootprintPoints(footprintPoints);
+      const ring = ordered.map(([lat, lng]) => [lng, lat]);
+      if (ring.length && (ring[0][0] !== ring[ring.length - 1][0] || ring[0][1] !== ring[ring.length - 1][1])) {
+          ring.push(ring[0]);
+      }
+      featureCollection.features.push({
+          type: 'Feature',
+          properties: {},
+          geometry: { type: 'Polygon', coordinates: [ring] }
+      });
+    }
+
+    if (buildingPickerMap.getSource('building-picker-footprint')) {
+      buildingPickerMap.getSource('building-picker-footprint').setData(featureCollection);
+    } else {
+      buildingPickerMap.addSource('building-picker-footprint', { type: 'geojson', data: featureCollection });
+      buildingPickerMap.addLayer({
+          id: 'building-picker-footprint-fill',
+          type: 'fill',
+          source: 'building-picker-footprint',
+          paint: { 'fill-color': '#d9d0c9', 'fill-opacity': 1 }
+      });
+      buildingPickerMap.addLayer({
+          id: 'building-picker-footprint-outline',
+          type: 'line',
+          source: 'building-picker-footprint',
+          paint: { 'line-color': '#af9e94', 'line-width': 1 }
+      });
+
+      // ✅ Same fix as syncRoomPickerFootprint: layers just created default to
+      // visible, so if this ran via the once('idle', ...) retry (after
+      // attachPickerViewToggle already set Satellite mode), hide them now.
+      if (pickerViewModes['buildingMapPicker'] === 'satellite') {
+        buildingPickerMap.setLayoutProperty('building-picker-footprint-fill', 'visibility', 'none');
+        buildingPickerMap.setLayoutProperty('building-picker-footprint-outline', 'visibility', 'none');
+      }
+    }
+  }
+
+  let roomPickerFootprintLayer = null; // tracks the building footprint shown in the Room's Open Map Picker
+
+  // Looks up the currently-selected building's saved footprint (from allBuildings)
+  // and draws it on the room location picker map, so admins can see the building
+  // outline for context while pinning a room's exact location.
+  function syncRoomPickerFootprint() {
+    if (!roomPickerMap) return;
+    if (!roomPickerMap.isStyleLoaded()) {
+      roomPickerMap.once('idle', syncRoomPickerFootprint);
+      return;
+    }
+
+    const selectedShortName = currentRoomBuildingShortName || document.getElementById('roomBuilding')?.value;
+
+    let footprintsToShow = [];
+    if (selectedShortName) {
+      // A building is selected — show just that one footprint
+      const building = allBuildings.find(b => b.short_name === selectedShortName);
+      if (building && Array.isArray(building.footprint) && building.footprint.length >= 3) {
+        footprintsToShow = [building.footprint];
+      }
+    } else {
+      // No building selected yet — show ALL building footprints for context
+      footprintsToShow = allBuildings
+        .filter(b => Array.isArray(b.footprint) && b.footprint.length >= 3)
+        .map(b => b.footprint);
+    }
+
+    const featureCollection = {
+      type: 'FeatureCollection',
+      features: footprintsToShow.map(fp => {
+        const ordered = getOrderedFootprintPoints(fp);
+        const ring = ordered.map(([lat, lng]) => [lng, lat]); // GeoJSON wants [lng, lat]
+        if (ring.length && (ring[0][0] !== ring[ring.length - 1][0] || ring[0][1] !== ring[ring.length - 1][1])) {
+          ring.push(ring[0]); // close the ring
+        }
+        return { type: 'Feature', properties: {}, geometry: { type: 'Polygon', coordinates: [ring] } };
+      })
+    };
+
+    // A single GeoJSON source replaces the old layerGroup entirely — setData()
+    // handles clearing + redrawing in one call, for any number of footprints (including zero).
+    if (roomPickerMap.getSource('room-picker-footprints')) {
+      roomPickerMap.getSource('room-picker-footprints').setData(featureCollection);
+    } else {
+      roomPickerMap.addSource('room-picker-footprints', { type: 'geojson', data: featureCollection });
+      roomPickerMap.addLayer({
+        id: 'room-picker-footprints-fill',
+        type: 'fill',
+        source: 'room-picker-footprints',
+        paint: { 'fill-color': '#d9d0c9', 'fill-opacity': 1 }
+      });
+      roomPickerMap.addLayer({
+        id: 'room-picker-footprints-outline',
+        type: 'line',
+        source: 'room-picker-footprints',
+        paint: { 'line-color': '#af9e94', 'line-width': 1 }
+      });
+
+      // ✅ These layers were just created for the first time — they default
+      // to visible. If Satellite mode is already active (e.g. this creation
+      // happened via the once('idle', ...) retry, which runs *after*
+      // attachPickerViewToggle already set mode to 'satellite'), hide them
+      // immediately so they don't flash/stay visible over the aerial imagery.
+      if (pickerViewModes['roomMapPicker'] === 'satellite') {
+        roomPickerMap.setLayoutProperty('room-picker-footprints-fill', 'visibility', 'none');
+        roomPickerMap.setLayoutProperty('room-picker-footprints-outline', 'visibility', 'none');
+      }
+    }
+  }
+
+  function showAdminLoadingScreen(){
+    document.getElementById('loadingScreen')?.classList.add('active');
+  }
+  function hideAdminLoadingScreen(){
+    document.getElementById('loadingScreen')?.classList.remove('active');
+  }
+  function setAdminLoadingText(msg){
+    const el = document.getElementById('adminLoadingText');
+    if (el) el.textContent = msg;
+  }
+
+  // ── UTILS ──
+  function escHtml(str){return String(str||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+
+  // ── PROFILE PANEL ──
+  async function openProfile() {
+    const s = getSession();
+    if (!s) return;
+    // Fill from session first
+    const initials = (s.name||'A').split(' ').map(w=>w[0]).join('').substring(0,2).toUpperCase();
+    document.getElementById('profileAvatarLg').textContent = initials;
+    document.getElementById('profilePanelName').textContent = s.name || 'Admin';
+    document.getElementById('profilePanelId').textContent = 'ID: ' + (s.userId || '—');
+    document.getElementById('profileFullName').textContent = s.name || '—';
+    document.getElementById('profileEmail').textContent = s.email || '—';
+    document.getElementById('profileRole').textContent = s.role || '—';
+    document.getElementById('profileUserId').textContent = s.userId || '—';
+    // Show panel
+    document.getElementById('profileOverlay').classList.add('active');
+    document.getElementById('profilePanel').classList.add('active');
+    // Fetch full profile from DB
+    try {
+      const res = await fetch(`/api/auth/profile/${s.userId}`);
+      const data = await res.json();
+      if (data.ok) {
+        const u = data.user;
+        document.getElementById('profileFullName').textContent = u.name || '—';
+        document.getElementById('profileEmail').textContent = u.email || '—';
+        document.getElementById('profileRole').textContent = u.role || '—';
+        document.getElementById('profileUserId').textContent = u.userId || '—';
+        if (u.photo) {
+          const photoHtml = `<img src="${u.photo}" alt="avatar" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`;
+          document.getElementById('profileAvatarLg').innerHTML = photoHtml;
+          document.getElementById('sidebarAvatar').innerHTML = photoHtml;
+        }
+      }
+    } catch {}
+  }
+
+  function closeProfile() {
+    document.getElementById('profileOverlay').classList.remove('active');
+    document.getElementById('profilePanel').classList.remove('active');
+  }
+
+  async function uploadProfilePhoto(input) {
+    const file = input.files[0];
+    if (!file) return;
+    if (file.size > 2 * 1024 * 1024) {
+      showToast('Image too large (max 2MB)', 'error'); return;
+    }
+    const reader = new FileReader();
+    reader.onload = async function(e) {
+      const photo = e.target.result; // base64
+      const s = getSession();
+      if (!s) return;
+      showToast('Uploading photo…', 'info');
+      try {
+        const res = await fetch('/api/auth/update-photo', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ userId: s.userId, photo })
+        });
+        const data = await res.json();
+        if (!res.ok || !data.ok) throw new Error(data.error || 'Upload failed');
+        // Update avatar in panel and sidebar
+        document.getElementById('profileAvatarLg').innerHTML =
+          `<img src="${photo}" alt="avatar" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`;
+        document.getElementById('sidebarAvatar').innerHTML =
+          `<img src="${photo}" alt="avatar" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`;
+        showToast('Profile photo updated!', 'success');
+      } catch(err) {
+        showToast(err.message, 'error');
+      }
+    };
+    reader.readAsDataURL(file);
+  }
+
+  // Draws every OTHER saved building's footprint as background context on a
+// picker map — so while adding a new building (or editing an existing one),
+// previously-drawn footprints stay visible instead of disappearing. Excludes
+// the building currently being edited, since that one is already drawn
+// separately (and live-editable) via footprintPoints. Muted styling
+// (lower opacity, gray outline) so it reads as context, not the active shape.
+function drawOtherBuildingFootprints(map) {
+  const others = allBuildings.filter(b =>
+    Array.isArray(b.footprint) && b.footprint.length >= 3 &&
+    String(b.id) !== String(editingBuildingId)
+  );
+
+  const featureCollection = {
+    type: 'FeatureCollection',
+    features: others.map(b => {
+      const ordered = getOrderedFootprintPoints(b.footprint);
+      const ring = ordered.map(([lat, lng]) => [lng, lat]);
+      if (ring.length && (ring[0][0] !== ring[ring.length - 1][0] || ring[0][1] !== ring[ring.length - 1][1])) {
+        ring.push(ring[0]);
+      }
+      return {
+        type: 'Feature',
+        properties: { name: b.name },
+        geometry: { type: 'Polygon', coordinates: [ring] }
+      };
+    })
+  };
+
+  if (map.getSource('other-building-footprints')) {
+    map.getSource('other-building-footprints').setData(featureCollection);
+  } else {
+    map.addSource('other-building-footprints', { type: 'geojson', data: featureCollection });
+    map.addLayer({
+      // ✅ Matches the exact styling used everywhere else buildings are
+      // drawn (static-footprints, building-picker-footprint, etc.) — full
+      // opacity so it doesn't blend with whatever's underneath (e.g. the
+      // green track), instead of the previous 0.5 opacity that made it
+      // read as a different, olive-tinted color.
+      id: 'other-building-footprints-fill',
+      type: 'fill',
+      source: 'other-building-footprints',
+      paint: { 'fill-color': '#d9d0c9', 'fill-opacity': 1 }
+    });
+    map.addLayer({
+      id: 'other-building-footprints-outline',
+      type: 'line',
+      source: 'other-building-footprints',
+      paint: { 'line-color': '#af9e94', 'line-width': 1 }
+    });
+  }
+}
+
+  // Draws the shared static footprints (from static-footprints.js) onto any
+  // Leaflet map picker instance — keeps Manage Buildings / Manage Rooms visually
+  // consistent with the main app's addBuildingFootprints() output.
+  function drawStaticFootprints(map) {
+    const footprints = window.STATIC_BUILDING_FOOTPRINTS || [];
+    if (!footprints.length) return;
+
+    const featureCollection = {
+      type: 'FeatureCollection',
+      features: footprints.map(fp => {
+        const ring = fp.coords.map(([lat, lng]) => [lng, lat]); // GeoJSON wants [lng, lat]
+        if (ring.length && (ring[0][0] !== ring[ring.length - 1][0] || ring[0][1] !== ring[ring.length - 1][1])) {
+          ring.push(ring[0]); // close the ring
+        }
+        return { type: 'Feature', properties: { name: fp.name }, geometry: { type: 'Polygon', coordinates: [ring] } };
+      })
+    };
+
+    if (map.getSource('static-footprints')) {
+      map.getSource('static-footprints').setData(featureCollection);
+      return;
+    }
+
+    map.addSource('static-footprints', { type: 'geojson', data: featureCollection });
+    map.addLayer({
+      id: 'static-footprints-fill',
+      type: 'fill',
+      source: 'static-footprints',
+      paint: { 'fill-color': '#d9d0c9', 'fill-opacity': 1 }
+    });
+    map.addLayer({
+      id: 'static-footprints-outline',
+      type: 'line',
+      source: 'static-footprints',
+      paint: { 'line-color': '#af9e94', 'line-width': 1 }
+    });
+  }
+
+  // ── INIT ──
+  document.addEventListener('DOMContentLoaded', async () => {
+    showAdminLoadingScreen();
+    connectRealtimeStream() // ✅ one connection for announcements + active users + map data
+    updateAnnPlaceholder(); // ✅ set the Information placeholder immediately on load
+    setAdminLoadingText('Loading users...');
+
+    const MIN_DISPLAY_MS = 900; // always show the loading screen for at least this long
+    const startedAt = Date.now();
+
+    try {
+      await loadUsers();
+      setAdminLoadingText('Loading buildings...');
+      await loadBuildings();
+      setAdminLoadingText('Loading rooms...');
+      await loadRooms();
+      setAdminLoadingText('Loading stats...');
+      await loadStats();
+      await loadActiveUsersList(); // ✅ ADD — initial value for the Manage → Users list
+    } catch (err) {
+      console.warn('Admin dashboard init error:', err);
+    }
+
+    const elapsed = Date.now() - startedAt;
+    const remaining = MIN_DISPLAY_MS - elapsed;
+    if (remaining > 0) {
+      await new Promise(resolve => setTimeout(resolve, remaining));
+    }
+
+    hideAdminLoadingScreen();
+    // Removed periodic polling — stats now refresh only via the Refresh
+    // button (loadStats() is already called from there) and via the
+    // 'mapDataChanged'/'announcementsChanged' realtime SSE events.
+
+    document.getElementById('roomBuilding')?.addEventListener('change', function() {
+      currentRoomBuildingShortName = this.value;
+      syncRoomPickerFootprint();
+    });
+  });
+  </script>
+  </body>
+  </html>
