@@ -1878,6 +1878,12 @@ function setupAdaptiveViewport() {
     window._applyViewportHeight = applyViewportHeight;
 }
 
+// Untouched copy of the buildings in campus-data.js, taken once at startup —
+// before any database sync or Visitor purpose trimming. Label position and
+// rotation (labelOffset), photos and tour photos only exist here, not in the
+// database, so they're always restored from this copy.
+const STATIC_CAMPUS_LOCATIONS = (campusData?.iba?.locations || []).map(loc => ({ ...loc }));
+
 async function syncBuildingsFromDB() {
 try {
     const session = getAuthSession();
@@ -1899,6 +1905,13 @@ try {
     // labelOffset — for any building that still exists in the DB response.
     const existingByShort = {};
     const existingByName  = {};
+    // Start from the original campus-data.js buildings, so a building that
+    // wasn't in memory (e.g. hidden by a Visitor's previous purpose) still
+    // gets its label rotation, position and photos back.
+    STATIC_CAMPUS_LOCATIONS.forEach(loc => {
+        if (loc.shortName) existingByShort[loc.shortName] = loc;
+        existingByName[loc.name] = loc;
+    });
     campus.locations.forEach(loc => {
         if (loc.shortName) existingByShort[loc.shortName] = loc;
         existingByName[loc.name] = loc;
