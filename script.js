@@ -6930,7 +6930,7 @@ async function openProfilePanel() {
     // Every role (including Visitors, who now have real accounts) can set a
     // profile picture. Reset to visible in case an earlier session hid it.
     const photoEditLabel = document.querySelector('label[for="profilePhotoInput"]');
-    if (photoEditLabel) photoEditLabel.style.display = '';
+    if (photoEditLabel) photoEditLabel.style.display = 'flex';
     // Driven by the role's routeHistory flag in permissions.js, so this stays
     // in sync if the rule ever changes again, instead of hardcoding a role.
     const activitySection = document.getElementById('profileActivitySection');
